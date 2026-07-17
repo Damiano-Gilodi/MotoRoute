@@ -1,0 +1,21 @@
+# Repository text files use LF
+* text=auto eol=lf
+
+# Windows command scripts use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+mvnw.cmd text eol=crlf
+
+# Unix scripts use LF
+*.sh text eol=lf
+mvnw text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.zip binary

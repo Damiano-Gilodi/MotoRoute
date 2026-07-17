@@ -1,0 +1,33 @@
+# Local environment and secrets
+.env
+.env.local
+.env.*.local
+*.local
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Java and Maven
+backend/target/
+*.class
+*.log
+
+# Node and Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Test and coverage
+coverage/
+frontend/coverage/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
