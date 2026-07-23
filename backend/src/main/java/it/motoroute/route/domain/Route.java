@@ -49,20 +49,57 @@ public class Route {
         BigDecimal distanceKm,
         Difficulty difficulty
     ){
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+
+        if (startLocation == null || startLocation.isBlank()) {
+            throw new IllegalArgumentException(
+                "startLocation must not be blank"
+            );
+        }
+
+        if (endLocation == null || endLocation.isBlank()) {
+            throw new IllegalArgumentException(
+                "endLocation must not be blank"
+            );
+        }
+
+        if (distanceKm == null || distanceKm.signum() <= 0) {
+            throw new IllegalArgumentException(
+                "distanceKm must be greater than zero"
+            );
+        }
+
+        if (difficulty == null) {
+            throw new IllegalArgumentException(
+                "difficulty must not be null"
+            );
+        }
+
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
         Route route = new Route();
         route.id = UUID.randomUUID();
-        route.name = name;
-        route.description = description;
-        route.startLocation = startLocation;
-        route.endLocation = endLocation;
+        route.name = name.trim();
+        route.description = normalizeOptionalText(description);
+        route.startLocation = startLocation.trim();
+        route.endLocation = endLocation.trim();
         route.distanceKm = distanceKm;
         route.difficulty = difficulty;
         route.createdAt = now;
         route.updatedAt = now;
 
         return route;
+    }
+
+    private static String normalizeOptionalText(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 
     public UUID getId() {
