@@ -10,6 +10,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
+@ActiveProfiles("test")
 @Import(TestcontainersConfiguration.class)
 class RouteRepositoryIT {
 
@@ -69,19 +71,19 @@ class RouteRepositoryIT {
     @Test
     void shouldRejectNonPositiveDistanceAtDatabaseLevel() {
         assertThatThrownBy(() -> jdbcTemplate.update("""
-            INSERT INTO routes (
-                id,
-                name,
-                description,
-                start_location,
-                end_location,
-                distance_km,
-                difficulty,
-                created_at,
-                updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """,
+                INSERT INTO routes (
+                    id,
+                    name,
+                    description,
+                    start_location,
+                    end_location,
+                    distance_km,
+                    difficulty,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """,
             UUID.randomUUID(),
             "Percorso non valido",
             null,
@@ -95,18 +97,18 @@ class RouteRepositoryIT {
     @Test
     void shouldRejectInvalidDifficultyAtDatabaseLevel() {
         assertThatThrownBy(() -> jdbcTemplate.update("""
-            INSERT INTO routes (
-                id,
-                name,
-                start_location,
-                end_location,
-                distance_km,
-                difficulty,
-                created_at,
-                updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """,
+                INSERT INTO routes (
+                    id,
+                    name,
+                    start_location,
+                    end_location,
+                    distance_km,
+                    difficulty,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """,
             UUID.randomUUID(),
             "Percorso",
             "Bormio",
