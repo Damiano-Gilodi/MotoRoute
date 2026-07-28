@@ -110,4 +110,111 @@ describe("CreateRouteForm", () => {
     expect(screen.getByLabelText("Difficoltà"))
       .toHaveValue("HARD");
   });
+
+  test("should block submission and show validation errors when values are invalid", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+
+    render(
+      <CreateRouteForm
+        onSubmit={onSubmit}
+        isSubmitting={false}
+        serverErrors={{}}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Crea itinerario",
+      }),
+    );
+
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    expect(
+      screen.getByText("Il nome è obbligatorio"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "Il luogo di partenza è obbligatorio",
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "Il luogo di arrivo è obbligatorio",
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        "La distanza deve essere maggiore di zero",
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("La difficoltà è obbligatoria"),
+    ).toBeInTheDocument();
+  });
+
+  test("should submit the normalized route payload when values are valid", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+
+    render(
+      <CreateRouteForm
+        onSubmit={onSubmit}
+        isSubmitting={false}
+        serverErrors={{}}
+      />,
+    );
+
+    await user.type(
+      screen.getByLabelText("Nome"),
+      "  Passo dello Stelvio  ",
+    );
+
+    await user.type(
+      screen.getByLabelText("Descrizione"),
+      "  Percorso panoramico  ",
+    );
+
+    await user.type(
+      screen.getByLabelText("Luogo di partenza"),
+      "  Bormio  ",
+    );
+
+    await user.type(
+      screen.getByLabelText("Luogo di arrivo"),
+      "  Prato allo Stelvio  ",
+    );
+
+    await user.type(
+      screen.getByLabelText("Distanza in chilometri"),
+      "47.50",
+    );
+
+    await user.selectOptions(
+      screen.getByLabelText("Difficoltà"),
+      "HARD",
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Crea itinerario",
+      }),
+    );
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: "Passo dello Stelvio",
+      description: "Percorso panoramico",
+      startLocation: "Bormio",
+      endLocation: "Prato allo Stelvio",
+      distanceKm: 47.5,
+      difficulty: "HARD",
+    });
+  });
 });

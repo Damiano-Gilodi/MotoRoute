@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {validateCreateRoute} from "./createRouteValidation.js";
 
 const initialValues = {
   name: "",
@@ -15,6 +16,11 @@ export function CreateRouteForm({
                                   serverErrors = {},
                                 }) {
   const [values, setValues] = useState(initialValues);
+  const [clientErrors, setClientErrors] = useState({});
+  const errors = {
+    ...serverErrors,
+    ...clientErrors,
+  };
 
   function handleChange(event) {
     const {name, value} = event.target;
@@ -23,11 +29,41 @@ export function CreateRouteForm({
       ...currentValues,
       [name]: value,
     }));
+
+    setClientErrors((currentErrors) => {
+      if (!currentErrors[name]) {
+        return currentErrors;
+      }
+
+      const nextErrors = {
+        ...currentErrors,
+      };
+
+      delete nextErrors[name];
+
+      return nextErrors;
+    });
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    onSubmit(values);
+
+    const validationErrors = validateCreateRoute(values);
+
+    setClientErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    onSubmit({
+      ...values,
+      name: values.name.trim(),
+      description: values.description.trim(),
+      startLocation: values.startLocation.trim(),
+      endLocation: values.endLocation.trim(),
+      distanceKm: Number(values.distanceKm),
+    });
   }
 
   return (
@@ -45,8 +81,8 @@ export function CreateRouteForm({
             onChange={handleChange}
           />
 
-          {serverErrors.name && (
-            <p role="alert">{serverErrors.name}</p>
+          {errors.name && (
+            <p role="alert">{errors.name}</p>
           )}
         </div>
 
@@ -59,8 +95,8 @@ export function CreateRouteForm({
             onChange={handleChange}
           />
 
-          {serverErrors.description && (
-            <p role="alert">{serverErrors.description}</p>
+          {errors.description && (
+            <p role="alert">{errors.description}</p>
           )}
         </div>
 
@@ -76,8 +112,8 @@ export function CreateRouteForm({
             onChange={handleChange}
           />
 
-          {serverErrors.startLocation && (
-            <p role="alert">{serverErrors.startLocation}</p>
+          {errors.startLocation && (
+            <p role="alert">{errors.startLocation}</p>
           )}
         </div>
 
@@ -93,8 +129,8 @@ export function CreateRouteForm({
             onChange={handleChange}
           />
 
-          {serverErrors.endLocation && (
-            <p role="alert">{serverErrors.endLocation}</p>
+          {errors.endLocation && (
+            <p role="alert">{errors.endLocation}</p>
           )}
         </div>
 
@@ -112,8 +148,8 @@ export function CreateRouteForm({
             onChange={handleChange}
           />
 
-          {serverErrors.distanceKm && (
-            <p role="alert">{serverErrors.distanceKm}</p>
+          {errors.distanceKm && (
+            <p role="alert">{errors.distanceKm}</p>
           )}
         </div>
 
@@ -131,8 +167,8 @@ export function CreateRouteForm({
             <option value="HARD">Difficile</option>
           </select>
 
-          {serverErrors.difficulty && (
-            <p role="alert">{serverErrors.difficulty}</p>
+          {errors.difficulty && (
+            <p role="alert">{errors.difficulty}</p>
           )}
         </div>
 
