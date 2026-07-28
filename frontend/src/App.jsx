@@ -1,10 +1,28 @@
-function App() {
+import {
+  Navigate,
+  Route,
+  Routes,
+} from "react-router";
+
+import {CreateRoutePage} from "./features/routes/create/CreateRoutePage";
+
+export default function App() {
   return (
-    <main>
-      <h1>MotoRoute</h1>
-      <p>Crea e condividi i tuoi itinerari motociclistici.</p>
-    </main>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to="/routes/new"
+            replace
+          />
+        }
+      />
+
+      <Route
+        path="/routes/new"
+        element={<CreateRoutePage/>}
+      />
+    </Routes>
   );
 }
-
-export default App;
