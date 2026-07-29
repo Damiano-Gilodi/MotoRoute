@@ -1,6 +1,7 @@
 package it.motoroute.route.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,10 +15,7 @@ import it.motoroute.route.application.RouteService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -139,5 +137,113 @@ public class RouteController {
         return ResponseEntity
             .created(location)
             .body(response);
+    }
+
+    @Operation(
+        summary = "List motorcycle routes",
+        description = """
+            Returns a paginated and sorted list of motorcycle routes.
+            Page numbering starts from zero.
+            """
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Route page returned successfully",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = RoutePageResponse.class),
+                examples = @ExampleObject(
+                    name = "Paginated route list",
+                    value = """
+                        {
+                          "content": [
+                            {
+                              "id": "11111111-1111-1111-1111-111111111111",
+                              "name": "Passo dello Stelvio",
+                              "startLocation": "Bormio",
+                              "endLocation": "Prato allo Stelvio",
+                              "distanceKm": 47.50,
+                              "difficulty": "HARD",
+                              "createdAt": "2026-07-27T10:00:00Z"
+                            }
+                          ],
+                          "page": 0,
+                          "size": 20,
+                          "totalElements": 1,
+                          "totalPages": 1,
+                          "first": true,
+                          "last": true
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination or sorting parameters",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Invalid page size",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "size must be between 1 and 100",
+                          "path": "/api/routes",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @GetMapping
+    public ResponseEntity<RoutePageResponse> listRoutes(
+
+        @Parameter(
+            description = "Zero-based page number",
+            example = "0"
+        )
+        @RequestParam(defaultValue = "0")
+        int page,
+
+        @Parameter(
+            description = "Number of routes per page, from 1 to 100",
+            example = "20"
+        )
+        @RequestParam(defaultValue = "20")
+        int size,
+
+        @Parameter(
+            description = """
+                Sort property and direction, separated by a comma.
+                Supported properties: createdAt, name, startLocation,
+                endLocation, distanceKm and difficulty.
+                """,
+            example = "createdAt,desc"
+        )
+        @RequestParam(defaultValue = "createdAt,desc")
+        String sort
+
+    ) {
+        RoutePageResponse response = routeService.listRoutes(
+            page,
+            size,
+            sort
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

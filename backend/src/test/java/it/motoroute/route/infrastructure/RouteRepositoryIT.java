@@ -9,11 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -116,5 +121,126 @@ class RouteRepositoryIT {
             new BigDecimal("47.50"),
             "INVALID"
         )).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void shouldReturnRequestedPageSortedByNameAscending() {
+        List<Route> routes = List.of(
+            createRoute("Alpi"),
+            createRoute("Dolomiti"),
+            createRoute("Garda"),
+            createRoute("Stelvio"),
+            createRoute("Valle d'Aosta")
+        );
+
+        routeRepository.saveAllAndFlush(routes);
+
+        entityManager.clear();
+
+        Page<Route> routePage = routeRepository.findAll(
+            PageRequest.of(
+                1,
+                2,
+                Sort.by(
+                    Sort.Order.asc("name")
+                )
+            )
+        );
+
+        assertThat(routePage.getNumber()).isEqualTo(1);
+        assertThat(routePage.getSize()).isEqualTo(2);
+        assertThat(routePage.getNumberOfElements()).isEqualTo(2);
+        assertThat(routePage.getTotalElements()).isEqualTo(5);
+        assertThat(routePage.getTotalPages()).isEqualTo(3);
+        assertThat(routePage.isFirst()).isFalse();
+        assertThat(routePage.isLast()).isFalse();
+
+        assertThat(routePage.getContent())
+            .extracting(Route::getName)
+            .containsExactly(
+                "Garda",
+                "Stelvio"
+            );
+    }
+
+    @Test
+    void shouldReturnRoutesSortedByCreatedAtDescending() {
+        insertRoute(
+            "Oldest route",
+            OffsetDateTime.parse("2026-07-27T08:00:00Z")
+        );
+
+        insertRoute(
+            "Newest route",
+            OffsetDateTime.parse("2026-07-27T10:00:00Z")
+        );
+
+        insertRoute(
+            "Middle route",
+            OffsetDateTime.parse("2026-07-27T09:00:00Z")
+        );
+
+        entityManager.clear();
+
+        Page<Route> routePage = routeRepository.findAll(
+            PageRequest.of(
+                0,
+                20,
+                Sort.by(
+                    Sort.Order.desc("createdAt")
+                )
+            )
+        );
+
+        assertThat(routePage.getTotalElements()).isEqualTo(3);
+
+        assertThat(routePage.getContent())
+            .extracting(Route::getName)
+            .containsExactly(
+                "Newest route",
+                "Middle route",
+                "Oldest route"
+            );
+    }
+
+    private Route createRoute(String name) {
+        return Route.create(
+            name,
+            "Route description",
+            "Start location",
+            "End location",
+            new BigDecimal("50.00"),
+            Difficulty.MEDIUM
+        );
+    }
+
+    private void insertRoute(
+        String name,
+        OffsetDateTime createdAt
+    ) {
+        jdbcTemplate.update("""
+                INSERT INTO routes (
+                    id,
+                    name,
+                    description,
+                    start_location,
+                    end_location,
+                    distance_km,
+                    difficulty,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+            UUID.randomUUID(),
+            name,
+            "Route description",
+            "Start location",
+            "End location",
+            new BigDecimal("50.00"),
+            "MEDIUM",
+            createdAt,
+            createdAt
+        );
     }
 }
