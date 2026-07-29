@@ -8,9 +8,9 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Schema(
-    description = "Complete motorcycle route data"
+    description = "Synthetic route data used in paginated route lists"
 )
-public record RouteResponse(
+public record RouteSummaryResponse(
 
     @Schema(
         description = "Route identifier",
@@ -20,12 +20,6 @@ public record RouteResponse(
 
     @Schema(example = "Passo dello Stelvio")
     String name,
-
-    @Schema(
-        example = "Percorso panoramico",
-        nullable = true
-    )
-    String description,
 
     @Schema(example = "Bormio")
     String startLocation,
@@ -46,13 +40,6 @@ public record RouteResponse(
         description = "Resource creation timestamp",
         example = "2026-07-27T10:00:00Z"
     )
-    OffsetDateTime createdAt,
-
-    @Schema(
-        description = "Resource last-update timestamp",
-        example = "2026-07-27T10:00:00Z"
-    )
-    OffsetDateTime updatedAt
-
+    OffsetDateTime createdAt
 ) {
 }

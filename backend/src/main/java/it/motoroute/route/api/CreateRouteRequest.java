@@ -9,6 +9,9 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
+@Schema(
+    description = "Data required to create a motorcycle route"
+)
 public record CreateRouteRequest(
 
     @Schema(
