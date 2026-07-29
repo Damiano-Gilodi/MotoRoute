@@ -5,6 +5,7 @@ import {
 } from "react-router";
 
 import {CreateRoutePage} from "./features/routes/create/CreateRoutePage";
+import {RoutesPage} from "./features/routes/list/RoutesPage";
 
 export default function App() {
   return (
@@ -13,10 +14,15 @@ export default function App() {
         path="/"
         element={
           <Navigate
-            to="/routes/new"
+            to="/routes"
             replace
           />
         }
+      />
+
+      <Route
+        path="/routes"
+        element={<RoutesPage/>}
       />
 
       <Route

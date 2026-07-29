@@ -1,12 +1,6 @@
-export class ApiRequestError extends Error {
-  constructor(message, status, fieldErrors = {}) {
-    super(message);
+import {ApiRequestError} from "../api/ApiRequestError.js";
 
-    this.name = "ApiRequestError";
-    this.status = status;
-    this.fieldErrors = fieldErrors;
-  }
-}
+export {ApiRequestError};
 
 async function readJsonResponse(response) {
   try {
