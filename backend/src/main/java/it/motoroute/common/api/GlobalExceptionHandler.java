@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -64,6 +65,26 @@ public class GlobalExceptionHandler {
         ApiError apiError = buildError(
             HttpStatus.BAD_REQUEST,
             exception.getMessage(),
+            request.getRequestURI(),
+            Map.of()
+        );
+
+        return ResponseEntity.badRequest().body(apiError);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(
+        MethodArgumentTypeMismatchException exception,
+        HttpServletRequest request
+    ) {
+        String requiredType = exception.getRequiredType() != null
+            ? exception.getRequiredType().getSimpleName()
+            : "the required type";
+
+        ApiError apiError = buildError(
+            HttpStatus.BAD_REQUEST,
+            "Parameter '%s' must be of type %s"
+                .formatted(exception.getName(), requiredType),
             request.getRequestURI(),
             Map.of()
         );
