@@ -157,4 +157,99 @@ class RouteTest {
 
         assertThat(route.getDescription()).isNull();
     }
+
+    @Test
+    void shouldRejectNameLongerThan120Characters() {
+        assertThatThrownBy(() ->
+            createRoute(
+                "a".repeat(121),
+                "Description",
+                "Start location",
+                "End location"
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "name must not exceed 120 characters"
+            );
+    }
+
+    @Test
+    void shouldRejectDescriptionLongerThan2000Characters() {
+        assertThatThrownBy(() ->
+            createRoute(
+                "Valid route",
+                "a".repeat(2001),
+                "Start location",
+                "End location"
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "description must not exceed 2000 characters"
+            );
+    }
+
+    @Test
+    void shouldRejectStartLocationLongerThan120Characters() {
+        assertThatThrownBy(() ->
+            createRoute(
+                "Valid route",
+                "Description",
+                "a".repeat(121),
+                "End location"
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "startLocation must not exceed 120 characters"
+            );
+    }
+
+    @Test
+    void shouldRejectEndLocationLongerThan120Characters() {
+        assertThatThrownBy(() ->
+            createRoute(
+                "Valid route",
+                "Description",
+                "Start location",
+                "a".repeat(121)
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "endLocation must not exceed 120 characters"
+            );
+    }
+
+    @Test
+    void shouldAcceptMaximumAllowedLengths() {
+        Route route = createRoute(
+            "a".repeat(120),
+            "b".repeat(2000),
+            "c".repeat(120),
+            "d".repeat(120)
+        );
+
+        assertThat(route.getName()).hasSize(120);
+        assertThat(route.getDescription()).hasSize(2000);
+        assertThat(route.getStartLocation()).hasSize(120);
+        assertThat(route.getEndLocation()).hasSize(120);
+    }
+
+    private Route createRoute(
+        String name,
+        String description,
+        String startLocation,
+        String endLocation
+    ) {
+        return Route.create(
+            name,
+            description,
+            startLocation,
+            endLocation,
+            new BigDecimal("50.00"),
+            Difficulty.MEDIUM
+        );
+    }
 }

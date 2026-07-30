@@ -11,7 +11,12 @@ import java.util.UUID;
 @Table(name = "routes")
 public class Route {
 
-    protected Route() {}
+    private static final int MAX_NAME_LENGTH = 120;
+    private static final int MAX_DESCRIPTION_LENGTH = 2000;
+    private static final int MAX_LOCATION_LENGTH = 120;
+
+    protected Route() {
+    }
 
     @Id
     private UUID id;
@@ -22,10 +27,10 @@ public class Route {
     @Column(length = 2000)
     private String description;
 
-    @Column(name="start_location", nullable = false, length = 120)
+    @Column(name = "start_location", nullable = false, length = 120)
     private String startLocation;
 
-    @Column(name="end_location", nullable = false, length = 120)
+    @Column(name = "end_location", nullable = false, length = 120)
     private String endLocation;
 
     @Column(name = "distance_km", nullable = false, precision = 8, scale = 2)
@@ -48,23 +53,34 @@ public class Route {
         String endLocation,
         BigDecimal distanceKm,
         Difficulty difficulty
-    ){
+    ) {
+        String normalizedName = normalizeText(
+            name,
+            "name",
+            MAX_NAME_LENGTH,
+            true
+        );
 
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
-        }
+        String normalizedDescription = normalizeText(
+            description,
+            "description",
+            MAX_DESCRIPTION_LENGTH,
+            false
+        );
 
-        if (startLocation == null || startLocation.isBlank()) {
-            throw new IllegalArgumentException(
-                "startLocation must not be blank"
-            );
-        }
+        String normalizedStartLocation = normalizeText(
+            startLocation,
+            "startLocation",
+            MAX_LOCATION_LENGTH,
+            true
+        );
 
-        if (endLocation == null || endLocation.isBlank()) {
-            throw new IllegalArgumentException(
-                "endLocation must not be blank"
-            );
-        }
+        String normalizedEndLocation = normalizeText(
+            endLocation,
+            "endLocation",
+            MAX_LOCATION_LENGTH,
+            true
+        );
 
         if (distanceKm == null || distanceKm.signum() <= 0) {
             throw new IllegalArgumentException(
@@ -82,10 +98,10 @@ public class Route {
 
         Route route = new Route();
         route.id = UUID.randomUUID();
-        route.name = name.trim();
-        route.description = normalizeOptionalText(description);
-        route.startLocation = startLocation.trim();
-        route.endLocation = endLocation.trim();
+        route.name = normalizedName;
+        route.description = normalizedDescription;
+        route.startLocation = normalizedStartLocation;
+        route.endLocation = normalizedEndLocation;
         route.distanceKm = distanceKm;
         route.difficulty = difficulty;
         route.createdAt = now;
@@ -94,12 +110,34 @@ public class Route {
         return route;
     }
 
-    private static String normalizeOptionalText(String value) {
+    private static String normalizeText(
+        String value,
+        String fieldName,
+        int maxLength,
+        boolean required
+    ) {
         if (value == null || value.isBlank()) {
-            return null;
+            if (required) {
+                throw new IllegalArgumentException(
+                    fieldName + " must not be blank"
+                );
+            } else {
+                return null;
+            }
         }
 
-        return value.trim();
+        String normalizedValue = value.trim();
+
+        if (normalizedValue.length() > maxLength) {
+            throw new IllegalArgumentException(
+                fieldName
+                    + " must not exceed "
+                    + maxLength
+                    + " characters"
+            );
+        }
+
+        return normalizedValue;
     }
 
     public UUID getId() {
