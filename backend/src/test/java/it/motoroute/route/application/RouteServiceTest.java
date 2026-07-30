@@ -12,14 +12,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -257,6 +255,54 @@ class RouteServiceTest {
             );
 
         verifyNoInteractions(mockRouteRepository);
+    }
+
+    @Test
+    void shouldReturnRouteDetails() {
+
+        Route route = createRoute(
+            "Passo dello Stelvio",
+            "Bormio",
+            "Prato allo Stelvio",
+            "47.50",
+            Difficulty.HARD
+        );
+        UUID id = route.getId();
+
+        when(mockRouteRepository.findById(id)).thenReturn(Optional.of(route));
+
+        RouteResponse routeResponse = routeService.getRoute(id);
+
+        assertThat(routeResponse.id()).isEqualTo(id);
+        assertThat(routeResponse.name()).isEqualTo(route.getName());
+        assertThat(routeResponse.description()).isEqualTo(route.getDescription());
+        assertThat(routeResponse.startLocation()).isEqualTo(route.getStartLocation());
+        assertThat(routeResponse.endLocation()).isEqualTo(route.getEndLocation());
+        assertThat(routeResponse.distanceKm()).isEqualTo(route.getDistanceKm());
+        assertThat(routeResponse.difficulty()).isEqualTo(route.getDifficulty());
+        assertThat(routeResponse.createdAt()).isEqualTo(route.getCreatedAt());
+        assertThat(routeResponse.updatedAt()).isEqualTo(route.getUpdatedAt());
+
+        verify(mockRouteRepository).findById(id);
+        verifyNoMoreInteractions(mockRouteRepository);
+    }
+
+    @Test
+    void shouldRejectRequestWhenRouteDoesNotExist() {
+
+        UUID routeId = UUID.randomUUID();
+
+        when(mockRouteRepository.findById(routeId))
+            .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+            routeService.getRoute(routeId)
+        )
+            .isInstanceOf(RouteNotFoundException.class)
+            .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).findById(routeId);
+        verifyNoMoreInteractions(mockRouteRepository);
     }
 
     private Route createRoute(

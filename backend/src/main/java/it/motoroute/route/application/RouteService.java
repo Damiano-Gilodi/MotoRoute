@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -124,5 +125,15 @@ public class RouteService {
         }
 
         return new Sort.Order(direction, field);
+    }
+
+    @Transactional(readOnly = true)
+    public RouteResponse getRoute(UUID routeId) {
+
+        Route route = routeRepository.findById(routeId).orElseThrow(
+            () -> new RouteNotFoundException(routeId)
+        );
+
+        return routeMapper.toResponse(route);
     }
 }
