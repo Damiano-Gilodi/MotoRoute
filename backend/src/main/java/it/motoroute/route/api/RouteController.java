@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.UUID;
 
 @Tag(
     name = "Routes",
@@ -243,6 +244,102 @@ public class RouteController {
             size,
             sort
         );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "Get motorcycle route by ID",
+        description = "Returns the details of a motorcycle route by its ID."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Route details returned successfully",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = RouteResponse.class),
+                examples = @ExampleObject(
+                    name = "Get route details",
+                    value = """
+                        {
+                          "id": "11111111-1111-1111-1111-111111111111",
+                          "name": "Passo dello Stelvio",
+                          "description": "Percorso panoramico",
+                          "startLocation": "Bormio",
+                          "endLocation": "Prato allo Stelvio",
+                          "distanceKm": 47.50,
+                          "difficulty": "HARD",
+                          "createdAt": "2026-07-27T10:00:00Z",
+                          "updatedAt": "2026-07-27T10:00:00Z"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Route not found",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 404,
+                          "error": "Not Found",
+                          "message": "Route not found with id: 11111111-1111-1111-1111-111111111111",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Route ID is not a valid UUID",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Invalid route id",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "Parameter 'routeId' must be of type UUID",
+                          "path": "/api/routes/abc",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @GetMapping("/{routeId}")
+    public ResponseEntity<RouteResponse> getRoute(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            example = "11111111-1111-1111-1111-111111111111",
+            required = true
+        )
+        @PathVariable UUID routeId
+    ) {
+
+        RouteResponse response = routeService.getRoute(routeId);
 
         return ResponseEntity.ok(response);
     }

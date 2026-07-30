@@ -1,6 +1,7 @@
 package it.motoroute.route.api;
 
 import it.motoroute.common.api.GlobalExceptionHandler;
+import it.motoroute.route.application.RouteNotFoundException;
 import it.motoroute.route.application.RouteService;
 import it.motoroute.route.domain.Difficulty;
 import org.junit.jupiter.api.Test;
@@ -305,8 +306,7 @@ class RouteControllerTest {
     }
 
     @Test
-    void shouldReturn200WithEmptyContentWhenNoRoutesExist()
-        throws Exception {
+    void shouldReturn200WithEmptyContentWhenNoRoutesExist() throws Exception {
 
         RoutePageResponse response = new RoutePageResponse(
             List.of(),
@@ -340,8 +340,7 @@ class RouteControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenPageSizeExceedsMaximum()
-        throws Exception {
+    void shouldReturn400WhenPageSizeExceedsMaximum() throws Exception {
 
         when(routeService.listRoutes(
             0,
@@ -369,8 +368,7 @@ class RouteControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenSortFieldIsUnsupported()
-        throws Exception {
+    void shouldReturn400WhenSortFieldIsUnsupported() throws Exception {
 
         when(routeService.listRoutes(
             0,
@@ -409,6 +407,73 @@ class RouteControllerTest {
                 "Parameter 'page' must be of type int"
             ))
             .andExpect(jsonPath("$.path").value("/api/routes"))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn200WithRouteDetailsWhenRouteExists() throws Exception {
+
+        UUID routeId = UUID.randomUUID();
+        OffsetDateTime now = OffsetDateTime.parse("2026-07-27T09:39:03.514796391Z");
+
+        RouteResponse routeResponse = new RouteResponse(
+            routeId,
+            "Passo dello Stelvio",
+            "Percorso panoramico",
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD,
+            now,
+            now
+        );
+
+        when(routeService.getRoute(routeId)).thenReturn(routeResponse);
+
+        mockMvc.perform(get("/api/routes/" + routeId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(routeId.toString()))
+            .andExpect(jsonPath("$.name").value("Passo dello Stelvio"))
+            .andExpect(jsonPath("$.description").value("Percorso panoramico"))
+            .andExpect(jsonPath("$.startLocation").value("Bormio"))
+            .andExpect(jsonPath("$.endLocation").value("Prato allo Stelvio"))
+            .andExpect(jsonPath("$.distanceKm").value(47.50))
+            .andExpect(jsonPath("$.difficulty").value("HARD"))
+            .andExpect(jsonPath("$.createdAt").value(now.toString()))
+            .andExpect(jsonPath("$.updatedAt").value(now.toString()));
+
+        verify(routeService).getRoute(routeId);
+    }
+
+    @Test
+    void shouldReturn404WhenRouteDoesNotExist() throws Exception {
+
+        UUID routeId = UUID.randomUUID();
+
+        when(routeService.getRoute(routeId)).thenThrow(new RouteNotFoundException(routeId));
+
+        mockMvc.perform(get("/api/routes/" + routeId))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.error").value("Not Found"))
+            .andExpect(jsonPath("$.message").value("Route not found with id: " + routeId))
+            .andExpect(jsonPath("$.path").value("/api/routes/" + routeId))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
+
+        verify(routeService).getRoute(routeId);
+    }
+
+    @Test
+    void shouldReturn400WhenRouteIdIsInvalid() throws Exception {
+
+        mockMvc.perform(get("/api/routes/abc"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
+            .andExpect(jsonPath("$.message").value("Parameter 'routeId' must be of type UUID"))
+            .andExpect(jsonPath("$.path").value("/api/routes/abc"))
             .andExpect(jsonPath("$.fieldErrors").isEmpty());
 
         verifyNoInteractions(routeService);

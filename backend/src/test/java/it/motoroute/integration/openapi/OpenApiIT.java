@@ -44,4 +44,43 @@ class OpenApiIT {
                 "$.paths['/api/routes'].post.responses['500']"
             ).exists());
     }
+
+    @Test
+    void shouldExposeGetRouteDetailsOpenApiDocumentation() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(
+                "application/json"
+            ))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.parameters[0].name"
+            ).value("routeId"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.parameters[0].in"
+            ).value("path"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.parameters[0].required"
+            ).value(true))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.parameters[0].schema.type"
+            ).value("string"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.parameters[0].schema.format"
+            ).value("uuid"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.responses['200']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.responses['400']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.responses['404']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}'].get.responses['500']"
+            ).exists());
+    }
 }
