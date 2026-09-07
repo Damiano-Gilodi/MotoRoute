@@ -1,3 +1,8 @@
+import {
+  formatRouteDateTime,
+  formatRouteDifficulty,
+} from "../utils/routeFormatters.js";
+
 export function RouteDetails({route}) {
   const {
     name,
@@ -36,14 +41,17 @@ export function RouteDetails({route}) {
 
         <div>
           <dt>Difficoltà</dt>
-          <dd>{difficulty}</dd>
+          <dd>
+            {formatRouteDifficulty(
+              difficulty,
+            )}</dd>
         </div>
 
         <div>
           <dt>Creato il</dt>
           <dd>
             <time dateTime={createdAt}>
-              {formatDate(createdAt)}
+              {formatRouteDateTime(createdAt)}
             </time>
           </dd>
         </div>
@@ -52,18 +60,11 @@ export function RouteDetails({route}) {
           <dt>Aggiornato il</dt>
           <dd>
             <time dateTime={updatedAt}>
-              {formatDate(updatedAt)}
+              {formatRouteDateTime(updatedAt)}
             </time>
           </dd>
         </div>
       </dl>
     </article>
   );
-}
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("it-IT", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(date));
 }

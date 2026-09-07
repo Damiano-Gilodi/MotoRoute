@@ -99,7 +99,7 @@ describe("RouteDetailsPage", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText("HARD"),
+      screen.getByText("Difficile"),
     ).toBeInTheDocument();
 
     expect(

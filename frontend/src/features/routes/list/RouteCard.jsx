@@ -1,22 +1,9 @@
 import {Link} from "react-router";
 
-const difficultyLabels = {
-  EASY: "Facile",
-  MEDIUM: "Media",
-  HARD: "Difficile",
-};
-
-function formatDate(value) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("it-IT", {
-    dateStyle: "medium",
-  }).format(date);
-}
+import {
+  formatRouteDate,
+  formatRouteDifficulty,
+} from "../utils/routeFormatters.js";
 
 export function RouteCard({route}) {
   const titleId = `route-title-${route.id}`;
@@ -44,8 +31,7 @@ export function RouteCard({route}) {
         <div>
           <dt>Difficoltà</dt>
           <dd>
-            {difficultyLabels[route.difficulty] ??
-              route.difficulty}
+            {formatRouteDifficulty(route.difficulty)}
           </dd>
         </div>
 
@@ -53,7 +39,7 @@ export function RouteCard({route}) {
           <dt>Creato il</dt>
           <dd>
             <time dateTime={route.createdAt}>
-              {formatDate(route.createdAt)}
+              {formatRouteDate(route.createdAt)}
             </time>
           </dd>
         </div>

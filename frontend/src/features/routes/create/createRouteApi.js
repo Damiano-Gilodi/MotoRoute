@@ -1,14 +1,7 @@
 import {ApiRequestError} from "../api/ApiRequestError.js";
+import {handleJsonResponse} from "../api/apiResponse.js";
 
 export {ApiRequestError};
-
-async function readJsonResponse(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function createRoute(payload) {
   const apiUrl = new URL(
@@ -24,16 +17,8 @@ export async function createRoute(payload) {
     body: JSON.stringify(payload),
   });
 
-  const responseBody = await readJsonResponse(response);
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      responseBody?.message ??
-      "Impossibile creare l’itinerario",
-      response.status,
-      responseBody?.fieldErrors ?? {},
-    );
-  }
-
-  return responseBody;
+  return handleJsonResponse(
+    response,
+    "Impossibile creare l’itinerario",
+  );
 }
