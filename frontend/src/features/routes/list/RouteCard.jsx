@@ -1,3 +1,5 @@
+import {Link} from "react-router";
+
 const difficultyLabels = {
   EASY: "Facile",
   MEDIUM: "Media",
@@ -56,6 +58,10 @@ export function RouteCard({route}) {
           </dd>
         </div>
       </dl>
+
+      <Link to={`/routes/${route.id}`}>
+        Visualizza dettagli
+      </Link>
     </article>
   );
 }

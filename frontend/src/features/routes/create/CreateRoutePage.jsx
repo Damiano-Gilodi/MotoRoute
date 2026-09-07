@@ -6,7 +6,12 @@ import {
   createRoute,
 } from "./createRouteApi";
 
+import {useNavigate} from "react-router";
+
 export function CreateRoutePage() {
+
+  const navigate = useNavigate();
+
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
@@ -16,19 +21,15 @@ export function CreateRoutePage() {
   const [apiError, setApiError] =
     useState("");
 
-  const [createdRoute, setCreatedRoute] =
-    useState(null);
-
   async function handleCreateRoute(payload) {
     setIsSubmitting(true);
     setServerErrors({});
     setApiError("");
-    setCreatedRoute(null);
 
     try {
       const route = await createRoute(payload);
 
-      setCreatedRoute(route);
+      navigate(`/routes/${route.id}`);
     } catch (error) {
       if (error instanceof ApiRequestError) {
         setServerErrors(error.fieldErrors);
@@ -48,13 +49,6 @@ export function CreateRoutePage() {
       {apiError && (
         <p role="alert">
           {apiError}
-        </p>
-      )}
-
-      {createdRoute && (
-        <p role="status">
-          Itinerario creato con successo:{" "}
-          {createdRoute.name}.
         </p>
       )}
 
