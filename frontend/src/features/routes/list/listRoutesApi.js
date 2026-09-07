@@ -1,18 +1,11 @@
 import {ApiRequestError} from "../api/ApiRequestError.js";
+import {handleJsonResponse} from "../api/apiResponse.js";
 
 export {ApiRequestError};
 
 export const DEFAULT_ROUTE_PAGE = 0;
 export const DEFAULT_ROUTE_PAGE_SIZE = 20;
 export const DEFAULT_ROUTE_SORT = "createdAt,desc";
-
-async function readJsonResponse(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function listRoutes({
                                    page = DEFAULT_ROUTE_PAGE,
@@ -37,16 +30,8 @@ export async function listRoutes({
     signal,
   });
 
-  const responseBody = await readJsonResponse(response);
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      responseBody?.message ??
-      "Impossibile caricare gli itinerari",
-      response.status,
-      responseBody?.fieldErrors ?? {},
-    );
-  }
-
-  return responseBody;
+  return handleJsonResponse(
+    response,
+    "Impossibile caricare gli itinerari",
+  );
 }

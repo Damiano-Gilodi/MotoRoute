@@ -1,5 +1,13 @@
-import { render, screen } from "@testing-library/react";
+import {
+  render,
+  screen,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  MemoryRouter,
+  Route,
+  Routes,
+} from "react-router";
 import {
   delay,
   http,
@@ -11,8 +19,8 @@ import {
   test,
 } from "vitest";
 
-import { server } from "../../../test/server";
-import { CreateRoutePage } from "./CreateRoutePage";
+import {server} from "../../../test/server";
+import {CreateRoutePage} from "./CreateRoutePage";
 
 const apiUrl = new URL(
   "/api/routes",
@@ -30,6 +38,26 @@ const createdRoute = {
   createdAt: "2026-07-28T10:00:00Z",
   updatedAt: "2026-07-28T10:00:00Z",
 };
+
+function renderCreateRoutePage() {
+  render(
+    <MemoryRouter initialEntries={["/routes/new"]}>
+      <Routes>
+        <Route
+          path="/routes/new"
+          element={<CreateRoutePage/>}
+        />
+
+        <Route
+          path="/routes/:routeId"
+          element={
+            <p>Pagina dettaglio itinerario</p>
+          }
+        />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
 
 async function fillValidForm(user) {
   await user.type(
@@ -64,7 +92,7 @@ async function fillValidForm(user) {
 }
 
 describe("CreateRoutePage", () => {
-  test("should show loading while creating the route and then show success", async () => {
+  test("should show loading and navigate to route details after creation", async () => {
     server.use(
       http.post(apiUrl, async () => {
         await delay(100);
@@ -80,7 +108,7 @@ describe("CreateRoutePage", () => {
 
     const user = userEvent.setup();
 
-    render(<CreateRoutePage />);
+    renderCreateRoutePage();
 
     await fillValidForm(user);
 
@@ -97,16 +125,16 @@ describe("CreateRoutePage", () => {
     ).toBeDisabled();
 
     expect(
-      await screen.findByRole("status"),
-    ).toHaveTextContent(
-      "Itinerario creato con successo: Passo dello Stelvio.",
-    );
+      await screen.findByText(
+        "Pagina dettaglio itinerario",
+      ),
+    ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("button", {
+      screen.queryByRole("button", {
         name: "Crea itinerario",
       }),
-    ).toBeEnabled();
+    ).not.toBeInTheDocument();
   });
 
   test("should show field errors returned by the API", async () => {
@@ -132,7 +160,7 @@ describe("CreateRoutePage", () => {
 
     const user = userEvent.setup();
 
-    render(<CreateRoutePage />);
+    renderCreateRoutePage();
 
     await fillValidForm(user);
 
@@ -164,18 +192,21 @@ describe("CreateRoutePage", () => {
       http.post(
         apiUrl,
         () =>
-          new HttpResponse("Internal server error", {
-            status: 500,
-            headers: {
-              "Content-Type": "text/plain",
+          new HttpResponse(
+            "Internal server error",
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "text/plain",
+              },
             },
-          }),
+          ),
       ),
     );
 
     const user = userEvent.setup();
 
-    render(<CreateRoutePage />);
+    renderCreateRoutePage();
 
     await fillValidForm(user);
 

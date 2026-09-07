@@ -3,22 +3,26 @@ import {handleJsonResponse} from "../api/apiResponse.js";
 
 export {ApiRequestError};
 
-export async function createRoute(payload) {
+export async function getRoute({
+                                 routeId,
+                                 signal,
+                               } = {}) {
+
   const apiUrl = new URL(
-    "/api/routes",
+    `/api/routes/${routeId}`,
     window.location.origin,
   );
 
   const response = await fetch(apiUrl, {
-    method: "POST",
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    body: JSON.stringify(payload),
+    signal,
   });
 
   return handleJsonResponse(
     response,
-    "Impossibile creare l’itinerario",
+    "Impossibile caricare l’itinerario",
   );
 }
