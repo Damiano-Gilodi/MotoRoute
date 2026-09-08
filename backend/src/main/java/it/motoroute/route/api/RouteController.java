@@ -333,7 +333,11 @@ public class RouteController {
         @Parameter(
             description = "Unique identifier of the motorcycle route",
             example = "11111111-1111-1111-1111-111111111111",
-            required = true
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
         )
         @PathVariable UUID routeId
     ) {
@@ -363,8 +367,8 @@ public class RouteController {
                           "description": "Percorso panoramico",
                           "startLocation": "Bormio",
                           "endLocation": "Prato allo Stelvio",
-                          "distanceKm": 47.50,
-                          "difficulty": "HARD",
+                          "distanceKm": 40.00,
+                          "difficulty": "MEDIUM"
                           "createdAt": "2026-07-27T10:00:00Z",
                           "updatedAt": "2026-09-08T15:30:00Z"
                         }
