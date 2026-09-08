@@ -19,8 +19,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RouteController.class)
@@ -32,6 +31,21 @@ class RouteControllerTest {
 
     @MockitoBean
     private RouteService routeService;
+
+    private static final UUID ROUTE_ID = UUID.fromString(
+        "11111111-1111-1111-1111-111111111111"
+    );
+
+    private static final String VALID_UPDATE_JSON = """
+        {
+          "name": "Passo dello Stelvio",
+          "description": "Percorso panoramico",
+          "startLocation": "Bormio",
+          "endLocation": "Prato allo Stelvio",
+          "distanceKm": 47.50,
+          "difficulty": "HARD"
+        }
+        """;
 
     @Test
     void shouldReturn201AndLocationWhenRequestIsValid() throws Exception {
@@ -475,6 +489,239 @@ class RouteControllerTest {
             .andExpect(jsonPath("$.message").value("Parameter 'routeId' must be of type UUID"))
             .andExpect(jsonPath("$.path").value("/api/routes/abc"))
             .andExpect(jsonPath("$.fieldErrors").isEmpty());
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn200WhenUpdateRouteIsSuccessful() throws Exception {
+        OffsetDateTime createdAt = OffsetDateTime.parse(
+            "2026-07-29T10:00:00Z"
+        );
+
+        OffsetDateTime updatedAt = OffsetDateTime.parse(
+            "2026-07-29T10:30:00Z"
+        );
+
+        UUID routeId = UUID.fromString(
+            "11111111-1111-1111-1111-111111111111"
+        );
+
+        UpdateRouteRequest request = new UpdateRouteRequest(
+            "Passo dello Stelvio",
+            "Percorso panoramico",
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD
+        );
+
+        RouteResponse response = new RouteResponse(
+            routeId,
+            "Passo dello Stelvio",
+            "Percorso panoramico",
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD,
+            createdAt,
+            updatedAt
+        );
+
+        when(routeService.updateRoute(routeId, request))
+            .thenReturn(response);
+
+        mockMvc.perform(put("/api/routes/" + routeId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "name": "Passo dello Stelvio",
+                      "description": "Percorso panoramico",
+                      "startLocation": "Bormio",
+                      "endLocation": "Prato allo Stelvio",
+                      "distanceKm": 47.50,
+                      "difficulty": "HARD"
+                    }
+                    """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.id").value(routeId.toString()))
+            .andExpect(jsonPath("$.name").value("Passo dello Stelvio"))
+            .andExpect(jsonPath("$.description").value("Percorso panoramico"))
+            .andExpect(jsonPath("$.startLocation").value("Bormio"))
+            .andExpect(jsonPath("$.endLocation").value("Prato allo Stelvio"))
+            .andExpect(jsonPath("$.distanceKm").value(47.50))
+            .andExpect(jsonPath("$.difficulty").value("HARD"))
+            .andExpect(jsonPath("$.createdAt").value("2026-07-29T10:00:00Z"))
+            .andExpect(jsonPath("$.updatedAt").value("2026-07-29T10:30:00Z"));
+
+        verify(routeService).updateRoute(routeId, request);
+    }
+
+    @Test
+    void shouldReturn404WhenUpdatingMissingRoute() throws Exception {
+        when(routeService.updateRoute(
+            eq(ROUTE_ID),
+            any(UpdateRouteRequest.class)
+        )).thenThrow(
+            new RouteNotFoundException(ROUTE_ID)
+        );
+
+        mockMvc.perform(
+                put("/api/routes/{routeId}", ROUTE_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(VALID_UPDATE_JSON)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(404))
+            .andExpect(jsonPath("$.error")
+                .value("Not Found"))
+            .andExpect(jsonPath("$.message")
+                .value(
+                    "Route not found with id: " + ROUTE_ID
+                ))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/" + ROUTE_ID))
+            .andExpect(jsonPath("$.fieldErrors")
+                .isEmpty());
+
+        verify(routeService).updateRoute(
+            eq(ROUTE_ID),
+            any(UpdateRouteRequest.class)
+        );
+    }
+
+    @Test
+    void shouldReturn400WhenUpdateRequestIsInvalid() throws Exception {
+        mockMvc.perform(
+                put("/api/routes/{routeId}", ROUTE_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                          "name": "   ",
+                          "description": "Percorso panoramico",
+                          "startLocation": "",
+                          "endLocation": "Prato allo Stelvio",
+                          "distanceKm": 0,
+                          "difficulty": null
+                        }
+                        """)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(400))
+            .andExpect(jsonPath("$.error")
+                .value("Bad Request"))
+            .andExpect(jsonPath("$.message")
+                .value("One or more fields are invalid"))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/" + ROUTE_ID))
+            .andExpect(jsonPath("$.fieldErrors.name")
+                .exists())
+            .andExpect(jsonPath("$.fieldErrors.startLocation")
+                .exists())
+            .andExpect(jsonPath("$.fieldErrors.distanceKm")
+                .exists())
+            .andExpect(jsonPath("$.fieldErrors.difficulty")
+                .exists());
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn400WhenUpdateRouteIdIsInvalid() throws Exception {
+        mockMvc.perform(
+                put("/api/routes/{routeId}", "not-a-uuid")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content(VALID_UPDATE_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(400))
+            .andExpect(jsonPath("$.error")
+                .value("Bad Request"))
+            .andExpect(jsonPath("$.message")
+                .value(
+                    "Parameter 'routeId' must be of type UUID"
+                ))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/not-a-uuid"))
+            .andExpect(jsonPath("$.fieldErrors")
+                .isEmpty());
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn400WhenUpdateRequestContainsMalformedJson()
+        throws Exception {
+
+        mockMvc.perform(
+                put("/api/routes/{routeId}", ROUTE_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                          "name": "Passo dello Stelvio",
+                          "description": "Percorso panoramico",
+                          "startLocation": "Bormio",
+                          "endLocation": "Prato allo Stelvio",
+                          "distanceKm": 47.50,
+                          "difficulty": "HARD"
+                        """)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(400))
+            .andExpect(jsonPath("$.error")
+                .value("Bad Request"))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/" + ROUTE_ID));
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn400WhenUpdateDifficultyIsInvalid() throws Exception {
+        mockMvc.perform(
+                put("/api/routes/{routeId}", ROUTE_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                          "name": "Passo dello Stelvio",
+                          "description": "Percorso panoramico",
+                          "startLocation": "Bormio",
+                          "endLocation": "Prato allo Stelvio",
+                          "distanceKm": 47.50,
+                          "difficulty": "EXTREME"
+                        }
+                        """)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status")
+                .value(400))
+            .andExpect(jsonPath("$.error")
+                .value("Bad Request"));
 
         verifyNoInteractions(routeService);
     }
