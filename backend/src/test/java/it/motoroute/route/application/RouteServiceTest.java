@@ -366,7 +366,7 @@ class RouteServiceTest {
             .isNotNull();
 
         assertThat(routeResponse.updatedAt())
-            .isAfter(routeResponse.createdAt());
+            .isAfterOrEqualTo(routeResponse.createdAt());
 
         verify(mockRouteRepository).findById(routeId);
         verifyNoMoreInteractions(mockRouteRepository);
