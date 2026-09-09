@@ -9,10 +9,8 @@ import {
 } from "vitest";
 
 import {server} from "../../../test/server";
-import {
-  ApiRequestError,
-  listRoutes,
-} from "./listRoutesApi";
+import {listRoutes} from "./listRoutesApi";
+import {ApiRequestError} from "../api/ApiRequestError.js";
 
 const apiUrl = new URL(
   "/api/routes",

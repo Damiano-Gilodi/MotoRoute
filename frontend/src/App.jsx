@@ -7,6 +7,7 @@ import {
 import {CreateRoutePage} from "./features/routes/create/CreateRoutePage";
 import {RoutesPage} from "./features/routes/list/RoutesPage";
 import {RouteDetailsPage} from "./features/routes/details/RouteDetailsPage.jsx";
+import {RouteEditPage} from "./features/routes/edit/RouteEditPage.jsx";
 
 export default function App() {
   return (
@@ -34,6 +35,11 @@ export default function App() {
       <Route
         path="/routes/:routeId"
         element={<RouteDetailsPage/>}
+      />
+
+      <Route
+        path="/routes/:routeId/edit"
+        element={<RouteEditPage/>}
       />
     </Routes>
   );

@@ -1,16 +1,17 @@
 import {handleJsonResponse} from "../api/apiResponse.js";
 
-export async function createRoute({
+export async function updateRoute({
+                                    routeId,
                                     payload,
                                     signal,
                                   } = {}) {
   const apiUrl = new URL(
-    "/api/routes",
+    `/api/routes/${routeId}`,
     window.location.origin,
   );
 
   const response = await fetch(apiUrl, {
-    method: "POST",
+    method: "PUT",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -21,6 +22,6 @@ export async function createRoute({
 
   return handleJsonResponse(
     response,
-    "Impossibile creare l’itinerario",
+    "Impossibile aggiornare l’itinerario",
   );
 }

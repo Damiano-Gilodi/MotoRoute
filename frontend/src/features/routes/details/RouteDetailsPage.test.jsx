@@ -76,6 +76,12 @@ describe("RouteDetailsPage", () => {
     );
 
     expect(
+      screen.queryByRole("link", {
+        name: "Modifica itinerario",
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
       await screen.findByRole("heading", {
         level: 1,
         name: "Passo dello Stelvio",
@@ -101,6 +107,15 @@ describe("RouteDetailsPage", () => {
     expect(
       screen.getByText("Difficile"),
     ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("link", {
+        name: "Modifica itinerario",
+      }),
+    ).toHaveAttribute(
+      "href",
+      `/routes/${routeId}/edit`,
+    );
 
     expect(
       screen.queryByRole("status"),
@@ -169,6 +184,12 @@ describe("RouteDetailsPage", () => {
 
     expect(
       screen.queryByText("Passo dello Stelvio"),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("link", {
+        name: "Modifica itinerario",
+      }),
     ).not.toBeInTheDocument();
   });
 

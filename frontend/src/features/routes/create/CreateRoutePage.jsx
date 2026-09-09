@@ -1,12 +1,10 @@
 import {useState} from "react";
 
-import {CreateRouteForm} from "./CreateRouteForm";
-import {
-  ApiRequestError,
-  createRoute,
-} from "./createRouteApi";
+import {createRoute} from "./createRouteApi";
 
 import {useNavigate} from "react-router";
+import {ApiRequestError} from "../api/ApiRequestError.js";
+import {RouteForm} from "../form/RouteForm.jsx";
 
 export function CreateRoutePage() {
 
@@ -27,7 +25,7 @@ export function CreateRoutePage() {
     setApiError("");
 
     try {
-      const route = await createRoute(payload);
+      const route = await createRoute({payload,});
 
       navigate(`/routes/${route.id}`);
     } catch (error) {
@@ -46,16 +44,19 @@ export function CreateRoutePage() {
 
   return (
     <main>
+      <h1>Crea itinerario</h1>
+      
       {apiError && (
         <p role="alert">
           {apiError}
         </p>
       )}
 
-      <CreateRouteForm
+      <RouteForm
         onSubmit={handleCreateRoute}
         isSubmitting={isSubmitting}
         serverErrors={serverErrors}
+        submitLabel="Crea itinerario"
       />
     </main>
   );

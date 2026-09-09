@@ -8,10 +8,8 @@ import {
 } from "react-router";
 
 import {RouteDetails} from "./RouteDetails.jsx";
-import {
-  ApiRequestError,
-  getRoute,
-} from "./getRouteApi.js";
+import {getRoute} from "./getRouteApi.js";
+import {ApiRequestError} from "../api/ApiRequestError.js";
 
 export function RouteDetailsPage() {
 
@@ -75,10 +73,6 @@ export function RouteDetailsPage() {
 
   return (
     <main>
-      <Link to="/routes">
-        Torna agli itinerari
-      </Link>
-
       {isLoading && (
         <p role="status">
           Caricamento itinerario...
@@ -101,9 +95,24 @@ export function RouteDetailsPage() {
         </p>
       )}
 
-      {!isLoading && !isNotFound && !apiError && route && (
-        <RouteDetails route={route}/>
-      )}
+      {!isLoading &&
+        !isNotFound &&
+        !apiError &&
+        route && (
+          <>
+            <RouteDetails route={route}/>
+
+            <Link
+              to={`/routes/${route.id}/edit`}
+            >
+              Modifica itinerario
+            </Link>
+          </>
+        )}
+
+      <Link to="/routes">
+        Torna agli itinerari
+      </Link>
     </main>
   );
 }

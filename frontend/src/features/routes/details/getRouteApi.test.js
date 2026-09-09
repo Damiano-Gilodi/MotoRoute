@@ -5,7 +5,8 @@ import {
   expect,
   test,
 } from "vitest";
-import {ApiRequestError, getRoute} from "./getRouteApi.js";
+import {getRoute} from "./getRouteApi.js";
+import {ApiRequestError} from "../api/ApiRequestError.js";
 
 const routeId = "11111111-1111-1111-1111-111111111111";
 

@@ -2,10 +2,8 @@ import {http, HttpResponse} from "msw";
 import {describe, expect, test} from "vitest";
 
 import {server} from "../../../test/server";
-import {
-  ApiRequestError,
-  createRoute,
-} from "./createRouteApi";
+import {createRoute} from "./createRouteApi";
+import {ApiRequestError} from "../api/ApiRequestError.js";
 
 const apiUrl = new URL(
   "/api/routes",
@@ -46,9 +44,8 @@ describe("createRoute", () => {
       http.post(apiUrl, async ({request}) => {
         receivedPayload = await request.json();
 
-        expect(
-          request.headers.get("Content-Type"),
-        ).toBe("application/json");
+        expect(request.headers.get("Accept")).toBe("application/json");
+        expect(request.headers.get("Content-Type")).toBe("application/json");
 
         return HttpResponse.json(createdRoute, {
           status: 201,
@@ -59,7 +56,9 @@ describe("createRoute", () => {
       }),
     );
 
-    const result = await createRoute(validPayload);
+    const result = await createRoute({
+      payload: validPayload,
+    });
 
     expect(receivedPayload).toEqual(validPayload);
     expect(result).toEqual(createdRoute);
@@ -87,7 +86,9 @@ describe("createRoute", () => {
     );
 
     const error = await getRejectedError(
-      createRoute(validPayload),
+      createRoute({
+        payload: validPayload,
+      }),
     );
 
     expect(error).toBeInstanceOf(ApiRequestError);
@@ -117,7 +118,9 @@ describe("createRoute", () => {
     );
 
     const error = await getRejectedError(
-      createRoute(validPayload),
+      createRoute({
+        payload: validPayload,
+      }),
     );
 
     expect(error).toBeInstanceOf(ApiRequestError);
