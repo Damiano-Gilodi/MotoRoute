@@ -54,60 +54,77 @@ public class Route {
         BigDecimal distanceKm,
         Difficulty difficulty
     ) {
-        String normalizedName = normalizeText(
-            name,
-            "name",
-            MAX_NAME_LENGTH,
-            true
-        );
-
-        String normalizedDescription = normalizeText(
-            description,
-            "description",
-            MAX_DESCRIPTION_LENGTH,
-            false
-        );
-
-        String normalizedStartLocation = normalizeText(
-            startLocation,
-            "startLocation",
-            MAX_LOCATION_LENGTH,
-            true
-        );
-
-        String normalizedEndLocation = normalizeText(
-            endLocation,
-            "endLocation",
-            MAX_LOCATION_LENGTH,
-            true
-        );
-
-        if (distanceKm == null || distanceKm.signum() <= 0) {
-            throw new IllegalArgumentException(
-                "distanceKm must be greater than zero"
-            );
-        }
-
-        if (difficulty == null) {
-            throw new IllegalArgumentException(
-                "difficulty must not be null"
-            );
-        }
 
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
         Route route = new Route();
         route.id = UUID.randomUUID();
-        route.name = normalizedName;
-        route.description = normalizedDescription;
-        route.startLocation = normalizedStartLocation;
-        route.endLocation = normalizedEndLocation;
-        route.distanceKm = distanceKm;
-        route.difficulty = difficulty;
+        route.name = validateName(name);
+        route.description = validateDescription(description);
+        route.startLocation = validateStartLocation(startLocation);
+        route.endLocation = validateEndLocation(endLocation);
+        route.distanceKm = validateDistanceKm(distanceKm);
+        route.difficulty = validateDifficulty(difficulty);
         route.createdAt = now;
         route.updatedAt = now;
 
         return route;
+    }
+
+    public void update(
+        String name,
+        String description,
+        String startLocation,
+        String endLocation,
+        BigDecimal distanceKm,
+        Difficulty difficulty
+    ) {
+        String validatedName = validateName(name);
+        String validatedDescription = validateDescription(description);
+        String validatedStartLocation = validateStartLocation(startLocation);
+        String validatedEndLocation = validateEndLocation(endLocation);
+        BigDecimal validatedDistanceKm = validateDistanceKm(distanceKm);
+        Difficulty validatedDifficulty = validateDifficulty(difficulty);
+
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
+        this.name = validatedName;
+        this.description = validatedDescription;
+        this.startLocation = validatedStartLocation;
+        this.endLocation = validatedEndLocation;
+        this.distanceKm = validatedDistanceKm;
+        this.difficulty = validatedDifficulty;
+        this.updatedAt = now;
+    }
+
+    private static String validateName(String name) {
+        return normalizeText(name, "name", MAX_NAME_LENGTH, true);
+    }
+
+    private static String validateDescription(String description) {
+        return normalizeText(description, "description", MAX_DESCRIPTION_LENGTH, false);
+    }
+
+    private static String validateStartLocation(String startLocation) {
+        return normalizeText(startLocation, "startLocation", MAX_LOCATION_LENGTH, true);
+    }
+
+    private static String validateEndLocation(String endLocation) {
+        return normalizeText(endLocation, "endLocation", MAX_LOCATION_LENGTH, true);
+    }
+
+    private static BigDecimal validateDistanceKm(BigDecimal distanceKm) {
+        if (distanceKm == null || distanceKm.signum() <= 0) {
+            throw new IllegalArgumentException("distanceKm must be greater than zero");
+        }
+        return distanceKm;
+    }
+
+    private static Difficulty validateDifficulty(Difficulty difficulty) {
+        if (difficulty == null) {
+            throw new IllegalArgumentException("difficulty must not be null");
+        }
+        return difficulty;
     }
 
     private static String normalizeText(

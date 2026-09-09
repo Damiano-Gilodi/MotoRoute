@@ -1,7 +1,4 @@
-import {ApiRequestError} from "../api/ApiRequestError.js";
 import {handleJsonResponse} from "../api/apiResponse.js";
-
-export {ApiRequestError};
 
 export const DEFAULT_ROUTE_PAGE = 0;
 export const DEFAULT_ROUTE_PAGE_SIZE = 20;

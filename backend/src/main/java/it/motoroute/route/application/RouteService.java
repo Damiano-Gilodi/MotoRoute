@@ -3,6 +3,7 @@ package it.motoroute.route.application;
 import it.motoroute.route.api.CreateRouteRequest;
 import it.motoroute.route.api.RoutePageResponse;
 import it.motoroute.route.api.RouteResponse;
+import it.motoroute.route.api.UpdateRouteRequest;
 import it.motoroute.route.domain.Route;
 import it.motoroute.route.infrastructure.RouteRepository;
 import org.springframework.data.domain.Page;
@@ -132,6 +133,24 @@ public class RouteService {
 
         Route route = routeRepository.findById(routeId).orElseThrow(
             () -> new RouteNotFoundException(routeId)
+        );
+
+        return routeMapper.toResponse(route);
+    }
+
+    public RouteResponse updateRoute(UUID routeId, UpdateRouteRequest request) {
+
+        Route route = routeRepository.findById(routeId).orElseThrow(
+            () -> new RouteNotFoundException(routeId)
+        );
+
+        route.update(
+            request.name(),
+            request.description(),
+            request.startLocation(),
+            request.endLocation(),
+            request.distanceKm(),
+            request.difficulty()
         );
 
         return routeMapper.toResponse(route);

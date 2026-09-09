@@ -3,6 +3,7 @@ package it.motoroute.route.application;
 import it.motoroute.route.api.CreateRouteRequest;
 import it.motoroute.route.api.RoutePageResponse;
 import it.motoroute.route.api.RouteResponse;
+import it.motoroute.route.api.UpdateRouteRequest;
 import it.motoroute.route.domain.Difficulty;
 import it.motoroute.route.domain.Route;
 import it.motoroute.route.infrastructure.RouteRepository;
@@ -300,6 +301,72 @@ class RouteServiceTest {
         )
             .isInstanceOf(RouteNotFoundException.class)
             .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).findById(routeId);
+        verifyNoMoreInteractions(mockRouteRepository);
+    }
+
+    @Test
+    void shouldUpdateRoute() {
+
+        Route route = createRoute(
+            "Passo dello Stelvio",
+            "Bormio",
+            "Prato allo Stelvio",
+            "47.50",
+            Difficulty.HARD
+        );
+
+        UUID routeId = route.getId();
+
+        UpdateRouteRequest updateRequest =
+            new UpdateRouteRequest(
+                "Passo dello Stelvio",
+                "  Percorso panoramico  ",
+                "Bormio",
+                "Prato allo Stelvio",
+                new BigDecimal("40.00"),
+                Difficulty.MEDIUM
+            );
+
+        when(mockRouteRepository.findById(routeId))
+            .thenReturn(Optional.of(route));
+
+        RouteResponse routeResponse =
+            routeService.updateRoute(
+                routeId,
+                updateRequest
+            );
+
+        assertThat(routeResponse.id())
+            .isEqualTo(routeId);
+
+        assertThat(routeResponse.name())
+            .isEqualTo("Passo dello Stelvio");
+
+        assertThat(routeResponse.description())
+            .isEqualTo("Percorso panoramico");
+
+        assertThat(routeResponse.startLocation())
+            .isEqualTo("Bormio");
+
+        assertThat(routeResponse.endLocation())
+            .isEqualTo("Prato allo Stelvio");
+
+        assertThat(routeResponse.distanceKm())
+            .isEqualByComparingTo("40.00");
+
+        assertThat(routeResponse.difficulty())
+            .isEqualTo(Difficulty.MEDIUM);
+
+        assertThat(routeResponse.createdAt())
+            .isNotNull();
+
+        assertThat(routeResponse.updatedAt())
+            .isNotNull();
+
+        assertThat(routeResponse.updatedAt())
+            .isAfterOrEqualTo(routeResponse.createdAt());
 
         verify(mockRouteRepository).findById(routeId);
         verifyNoMoreInteractions(mockRouteRepository);

@@ -1,7 +1,4 @@
-import {ApiRequestError} from "../api/ApiRequestError.js";
 import {handleJsonResponse} from "../api/apiResponse.js";
-
-export {ApiRequestError};
 
 export async function getRoute({
                                  routeId,

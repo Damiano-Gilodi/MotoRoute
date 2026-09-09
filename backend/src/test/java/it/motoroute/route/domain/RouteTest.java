@@ -6,6 +6,8 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -235,6 +237,86 @@ class RouteTest {
         assertThat(route.getDescription()).hasSize(2000);
         assertThat(route.getStartLocation()).hasSize(120);
         assertThat(route.getEndLocation()).hasSize(120);
+    }
+
+    @Test
+    void shouldUpdateValidRoute() {
+        Route route = Route.create(
+            "Passo dello Stelvio",
+            "Percorso panoramico",
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD
+        );
+
+        UUID originalId = route.getId();
+        OffsetDateTime originalCreatedAt = route.getCreatedAt();
+        OffsetDateTime originalUpdatedAt = route.getUpdatedAt();
+
+        route.update(
+            " Passo dello Stelvio ",
+            "  Percorso culturale  ",
+            "  Bormio ",
+            " Prato allo Stelvio  ",
+            new BigDecimal("40.00"),
+            Difficulty.MEDIUM
+        );
+
+        assertThat(route.getId()).isEqualTo(originalId);
+        assertThat(route.getName()).isEqualTo("Passo dello Stelvio");
+        assertThat(route.getDescription()).isEqualTo("Percorso culturale");
+        assertThat(route.getStartLocation()).isEqualTo("Bormio");
+        assertThat(route.getEndLocation()).isEqualTo("Prato allo Stelvio");
+        assertThat(route.getDistanceKm()).isEqualByComparingTo("40.00");
+        assertThat(route.getDifficulty()).isEqualTo(Difficulty.MEDIUM);
+        assertThat(route.getCreatedAt()).isEqualTo(originalCreatedAt);
+        assertThat(route.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt);
+    }
+
+    @Test
+    void shouldNotPartiallyUpdateRouteWhenNewValuesAreInvalid() {
+        Route route = Route.create(
+            "Passo dello Stelvio",
+            "Percorso panoramico",
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD
+        );
+
+        assertThatThrownBy(() ->
+            route.update(
+                "Nuovo nome",
+                "Nuova descrizione",
+                "Nuova partenza",
+                "Nuovo arrivo",
+                new BigDecimal("-10.00"),
+                Difficulty.MEDIUM
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "distanceKm must be greater than zero"
+            );
+
+        assertThat(route.getName())
+            .isEqualTo("Passo dello Stelvio");
+
+        assertThat(route.getDescription())
+            .isEqualTo("Percorso panoramico");
+
+        assertThat(route.getStartLocation())
+            .isEqualTo("Bormio");
+
+        assertThat(route.getEndLocation())
+            .isEqualTo("Prato allo Stelvio");
+
+        assertThat(route.getDistanceKm())
+            .isEqualByComparingTo("47.50");
+
+        assertThat(route.getDifficulty())
+            .isEqualTo(Difficulty.HARD);
     }
 
     private Route createRoute(
