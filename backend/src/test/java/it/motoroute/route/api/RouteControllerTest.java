@@ -646,8 +646,7 @@ class RouteControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenUpdateRequestContainsMalformedJson()
-        throws Exception {
+    void shouldReturn400WhenUpdateRequestContainsMalformedJson() throws Exception {
 
         mockMvc.perform(
                 put("/api/routes/{routeId}", ROUTE_ID)
@@ -699,6 +698,70 @@ class RouteControllerTest {
                 .value(400))
             .andExpect(jsonPath("$.error")
                 .value("Bad Request"));
+
+        verifyNoInteractions(routeService);
+    }
+
+    @Test
+    void shouldReturn204WhenDeleteRouteIsSuccessful() throws Exception {
+        mockMvc.perform(
+                delete("/api/routes/{routeId}", ROUTE_ID)
+            )
+            .andExpect(status().isNoContent())
+            .andExpect(content().string(""));
+
+        verify(routeService).deleteRoute(ROUTE_ID);
+    }
+
+    @Test
+    void shouldReturn404WhenDeleteRouteIsNotFound() throws Exception {
+
+        doThrow(new RouteNotFoundException(ROUTE_ID)).when(routeService).deleteRoute(ROUTE_ID);
+
+        mockMvc.perform(
+                delete("/api/routes/{routeId}", ROUTE_ID)
+            )
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(404))
+            .andExpect(jsonPath("$.error")
+                .value("Not Found"))
+            .andExpect(jsonPath("$.message")
+                .value(
+                    "Route not found with id: " + ROUTE_ID
+                ))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/" + ROUTE_ID))
+            .andExpect(jsonPath("$.fieldErrors")
+                .isEmpty());
+
+        verify(routeService).deleteRoute(ROUTE_ID);
+    }
+
+    @Test
+    void shouldReturn400WhenDeleteRouteIdIsInvalid() throws Exception {
+
+        mockMvc.perform(
+                delete("/api/routes/{routeId}", "not-a-uuid")
+            ).andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(
+                MediaType.APPLICATION_JSON
+            ))
+            .andExpect(jsonPath("$.status")
+                .value(400))
+            .andExpect(jsonPath("$.error")
+                .value("Bad Request"))
+            .andExpect(jsonPath("$.message")
+                .value(
+                    "Parameter 'routeId' must be of type UUID"
+                ))
+            .andExpect(jsonPath("$.path")
+                .value("/api/routes/not-a-uuid"))
+            .andExpect(jsonPath("$.fieldErrors")
+                .isEmpty());
 
         verifyNoInteractions(routeService);
     }
