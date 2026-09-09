@@ -79,19 +79,21 @@ class RouteServiceTest {
 
     @Test
     void shouldReturnPaginatedAndSortedRoutes() {
-        Route firstRoute = createRoute(
+        Route firstRoute = Route.create(
             "Passo dello Stelvio",
+            "Route description",
             "Bormio",
             "Prato allo Stelvio",
-            "47.50",
+            new BigDecimal("47.50"),
             Difficulty.HARD
         );
 
-        Route secondRoute = createRoute(
+        Route secondRoute = Route.create(
             "Lago di Garda",
+            "Route description",
             "Riva del Garda",
             "Sirmione",
-            "96.30",
+            new BigDecimal("96.30"),
             Difficulty.MEDIUM
         );
 
@@ -261,11 +263,12 @@ class RouteServiceTest {
     @Test
     void shouldReturnRouteDetails() {
 
-        Route route = createRoute(
+        Route route = Route.create(
             "Passo dello Stelvio",
+            "Route description",
             "Bormio",
             "Prato allo Stelvio",
-            "47.50",
+            new BigDecimal("47.50"),
             Difficulty.HARD
         );
         UUID id = route.getId();
@@ -309,11 +312,12 @@ class RouteServiceTest {
     @Test
     void shouldUpdateRoute() {
 
-        Route route = createRoute(
+        Route route = Route.create(
             "Passo dello Stelvio",
+            "Route description",
             "Bormio",
             "Prato allo Stelvio",
-            "47.50",
+            new BigDecimal("47.50"),
             Difficulty.HARD
         );
 
@@ -372,20 +376,40 @@ class RouteServiceTest {
         verifyNoMoreInteractions(mockRouteRepository);
     }
 
-    private Route createRoute(
-        String name,
-        String startLocation,
-        String endLocation,
-        String distanceKm,
-        Difficulty difficulty
-    ) {
-        return Route.create(
-            name,
+    @Test
+    void shouldDeleteExistingRoute() {
+        Route route = Route.create(
+            "Passo dello Stelvio",
             "Route description",
-            startLocation,
-            endLocation,
-            new BigDecimal(distanceKm),
-            difficulty
+            "Bormio",
+            "Prato allo Stelvio",
+            new BigDecimal("47.50"),
+            Difficulty.HARD
         );
+
+        UUID routeId = route.getId();
+
+        when(mockRouteRepository.findById(routeId)).thenReturn(Optional.of(route));
+
+        routeService.deleteRoute(routeId);
+
+        verify(mockRouteRepository).findById(routeId);
+        verify(mockRouteRepository).delete(route);
+        verifyNoMoreInteractions(mockRouteRepository);
+    }
+
+    @Test
+    void shouldThrowWhenRouteToDeleteDoesNotExist() {
+
+        UUID routeId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+        when(mockRouteRepository.findById(routeId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> routeService.deleteRoute(routeId))
+            .isInstanceOf(RouteNotFoundException.class)
+            .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).findById(routeId);
+        verifyNoMoreInteractions(mockRouteRepository);
     }
 }
