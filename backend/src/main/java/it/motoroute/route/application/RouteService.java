@@ -155,4 +155,13 @@ public class RouteService {
 
         return routeMapper.toResponse(route);
     }
+
+    public void deleteRoute(UUID routeId) {
+
+        Route route = routeRepository.findById(routeId).orElseThrow(
+            () -> new RouteNotFoundException(routeId)
+        );
+
+        routeRepository.delete(route);
+    }
 }

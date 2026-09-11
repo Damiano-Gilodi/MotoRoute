@@ -83,7 +83,7 @@ export function RouteEditPage() {
         payload,
       });
 
-      navigate(`/routes/${updatedRoute.id}`,);
+      navigate(`/routes/${updatedRoute.id}`, {replace: true},);
 
     } catch (error) {
       if (

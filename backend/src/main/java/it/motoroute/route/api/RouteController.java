@@ -317,7 +317,6 @@ public class RouteController {
                         """
                 )
             )
-
         ),
         @ApiResponse(
             responseCode = "500",
@@ -468,5 +467,85 @@ public class RouteController {
             routeService.updateRoute(routeId, request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "Delete a motorcycle route",
+        description = "Deletes an existing motorcycle route."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "204",
+            description = "Route deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Route ID is not a valid UUID",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Invalid route id",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "Parameter 'routeId' must be of type UUID",
+                          "path": "/api/routes/abc",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Route not found",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 404,
+                          "error": "Not Found",
+                          "message": "Route not found with id: 11111111-1111-1111-1111-111111111111",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @DeleteMapping("/{routeId}")
+    public ResponseEntity<Void> deleteRoute(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            example = "11111111-1111-1111-1111-111111111111",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID routeId
+    ) {
+
+        routeService.deleteRoute(routeId);
+
+        return ResponseEntity.noContent().build();
     }
 }
