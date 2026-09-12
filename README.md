@@ -1,40 +1,57 @@
 # MotoRoute
 
-MotoRoute è un'applicazione web full stack per creare, consultare, gestire e condividere itinerari motociclistici.
+MotoRoute è un'applicazione web full stack per creare, consultare, modificare e gestire itinerari motociclistici.
+
+Il progetto viene sviluppato per milestone e user story verticali, mantenendo separati backend e frontend ma facendo
+evolvere ogni funzionalità end-to-end: database, dominio, API REST, documentazione OpenAPI, interfaccia React e test
+automatici.
 
 ## Stato del progetto
 
-Il progetto è attualmente in fase di sviluppo.
+### Release
+
+**Versione:** `v0.1.0`
+
+La release `v0.1.0` rappresenta il completamento della **Milestone M1 — CRUD itinerari**.
 
 ### Milestone completate
 
 - **M0 — Fondamenta del progetto**
+- **M1 — CRUD itinerari**
 
 ### User story completate
 
 - **US-1.1 — Creazione itinerario**
 - **US-1.2 — Elenco itinerari**
+- **US-1.3 — Dettaglio itinerario**
+- **US-1.4 — Modifica itinerario**
+- **US-1.5 — Eliminazione itinerario**
 
 ### Funzionalità disponibili
 
 - configurazione separata di backend e frontend;
 - database PostgreSQL eseguito tramite Docker Compose;
-- gestione dello schema tramite migration Flyway;
+- gestione versionata dello schema tramite Flyway;
 - validazione dello schema tramite Hibernate;
-- test di integrazione con PostgreSQL e Testcontainers;
-- gestione standardizzata degli errori API;
+- test di integrazione con PostgreSQL reale tramite Testcontainers;
+- gestione centralizzata e standardizzata degli errori API;
 - documentazione OpenAPI e Swagger UI;
 - creazione di un itinerario;
-- visualizzazione paginata degli itinerari;
-- ordinamento degli itinerari;
-- pagina frontend per la creazione di un itinerario;
-- pagina frontend per l'elenco degli itinerari;
-- gestione degli stati di caricamento, errore ed elenco vuoto;
-- navigazione tra le pagine dell'elenco.
+- elenco paginato e ordinabile degli itinerari;
+- dettaglio di un singolo itinerario;
+- modifica di un itinerario esistente;
+- eliminazione di un itinerario con conferma esplicita;
+- validazione backend e frontend;
+- gestione frontend degli stati di caricamento, errore, not found, elenco vuoto e submit;
+- navigazione tra elenco, creazione, dettaglio e modifica;
+- test backend e frontend distribuiti sui livelli appropriati.
 
-La prossima attività prevista è:
+### Prossima milestone
 
-- **US-1.3 — Dettaglio itinerario**
+La prossima attività prevista è la **M2 — Waypoint e composizione dell'itinerario**, a partire dalla **US-2.1 —
+Creazione waypoint**.
+
+---
 
 ## Stack tecnologico
 
@@ -62,16 +79,57 @@ La prossima attività prevista è:
 - JSX
 - Vite
 - React Router
+- Fetch API
 - Vitest
 - Testing Library
+- `user-event`
 - Mock Service Worker
 
-### Infrastruttura
+### Infrastruttura e workflow
 
 - Docker
 - Docker Compose
 - Git
 - GitHub
+- branch `main`, `develop` e branch di lavoro dedicati
+
+---
+
+## Architettura
+
+Flusso principale lato backend:
+
+```text
+Browser / React
+      |
+      | HTTP JSON
+      v
+RouteController
+      |
+      v
+RouteService
+      |
+      +----> RouteMapper
+      |
+      v
+RouteRepository
+      |
+      v
+PostgreSQL
+```
+
+Principi principali:
+
+- il controller gestisce il confine HTTP e delega la logica applicativa;
+- il service orchestra i casi d'uso ed è il confine transazionale;
+- il dominio contiene invarianti e operazioni proprie della route;
+- i DTO separano il contratto API dalle entity JPA;
+- il mapper converte dominio e DTO;
+- il repository gestisce la persistenza;
+- Flyway è l'unico proprietario delle modifiche allo schema;
+- il frontend separa client API, Page, componenti presentazionali, form e funzioni pure.
+
+---
 
 ## Struttura del progetto
 
@@ -85,6 +143,91 @@ MotoRoute/
 └── README.md
 ```
 
+### Struttura backend principale
+
+```text
+backend/src/main/java/it/motoroute/
+├── common/
+│   └── api/
+│       ├── ApiError.java
+│       └── GlobalExceptionHandler.java
+│
+└── route/
+    ├── api/
+    │   ├── RouteController.java
+    │   ├── CreateRouteRequest.java
+    │   ├── UpdateRouteRequest.java
+    │   ├── RouteResponse.java
+    │   ├── RouteSummaryResponse.java
+    │   └── RoutePageResponse.java
+    │
+    ├── application/
+    │   ├── RouteService.java
+    │   └── RouteMapper.java
+    │
+    ├── domain/
+    │   ├── Route.java
+    │   └── Difficulty.java
+    │
+    └── infrastructure/
+        └── RouteRepository.java
+```
+
+`RouteNotFoundException` viene riutilizzata nei casi d'uso dettaglio, modifica ed eliminazione per produrre un
+comportamento `404 Not Found` coerente.
+
+### Struttura frontend principale
+
+```text
+frontend/src/
+├── App.jsx
+├── main.jsx
+├── index.css
+│
+├── features/
+│   └── routes/
+│       ├── api/
+│       │   ├── ApiRequestError.js
+│       │   └── apiResponse.js
+│       │
+│       ├── create/
+│       │   ├── CreateRoutePage.jsx
+│       │   └── createRouteApi.js
+│       │
+│       ├── list/
+│       │   ├── RoutesPage.jsx
+│       │   ├── RouteCard.jsx
+│       │   ├── RoutesPagination.jsx
+│       │   └── listRoutesApi.js
+│       │
+│       ├── details/
+│       │   ├── getRouteApi.js
+│       │   ├── RouteDetails.jsx
+│       │   └── RouteDetailsPage.jsx
+│       │
+│       ├── edit/
+│       │   ├── updateRouteApi.js
+│       │   └── RouteEditPage.jsx
+│       │
+│       ├── delete/
+│       │   └── deleteRouteApi.js
+│       │
+│       ├── form/
+│       │   ├── RouteForm.jsx
+│       │   └── routeValidation.js
+│       │
+│       └── utils/
+│           └── routeFormatters.js
+│
+└── test/
+    ├── server.js
+    └── setup.js
+```
+
+I relativi file di test sono mantenuti vicino al codice che verificano.
+
+---
+
 ## Requisiti
 
 Per eseguire il progetto in locale sono necessari:
@@ -94,6 +237,8 @@ Per eseguire il progetto in locale sono necessari:
 - Docker Compose;
 - Node.js;
 - npm.
+
+---
 
 ## Avvio locale
 
@@ -126,7 +271,7 @@ Il backend sarà disponibile all'indirizzo:
 http://localhost:8080
 ```
 
-Durante l'avvio, Flyway applica automaticamente le migration mancanti.
+Durante l'avvio, Flyway applica automaticamente le migration mancanti e Hibernate valida lo schema esistente.
 
 ### 3. Avvio del frontend
 
@@ -140,6 +285,8 @@ npm run dev
 
 Vite mostrerà nel terminale l'indirizzo locale del frontend.
 
+---
+
 ## Pagine frontend
 
 ### Elenco degli itinerari
@@ -148,13 +295,15 @@ Vite mostrerà nel terminale l'indirizzo locale del frontend.
 /routes
 ```
 
-La pagina mostra:
+La pagina gestisce:
 
 - stato di caricamento;
 - elenco degli itinerari;
 - stato vuoto;
 - errori restituiti dall'API;
-- navigazione tra le pagine.
+- paginazione;
+- ordinamento definito dal client API;
+- navigazione verso creazione e dettaglio.
 
 ### Creazione di un itinerario
 
@@ -162,7 +311,7 @@ La pagina mostra:
 /routes/new
 ```
 
-La pagina permette di inserire:
+Permette di inserire:
 
 - nome;
 - descrizione opzionale;
@@ -171,63 +320,52 @@ La pagina permette di inserire:
 - distanza in chilometri;
 - difficoltà.
 
-## Test backend
+Dopo la creazione viene aperta la pagina di dettaglio dell'itinerario appena creato.
 
-### Test unitari e web
+### Dettaglio itinerario
 
-```bash
-cd backend
-./mvnw test
+```text
+/routes/:routeId
 ```
 
-Questo comando esegue i test gestiti da Maven Surefire, tra cui:
+Mostra i dati completi dell'itinerario e permette di:
 
-- test unitari dei service;
-- test web dei controller;
-- test con MockMvc.
+- tornare all'elenco;
+- aprire la pagina di modifica;
+- eliminare l'itinerario previa conferma.
 
-### Suite completa
+Una route inesistente viene gestita con uno stato dedicato di not found.
 
-```bash
-cd backend
-./mvnw clean verify
+### Modifica itinerario
+
+```text
+/routes/:routeId/edit
 ```
 
-Questo comando esegue anche i test di integrazione con suffisso `IT`, gestiti tramite Maven Failsafe.
+Il form viene precaricato con i dati esistenti. Dopo un aggiornamento riuscito, l'utente torna al dettaglio aggiornato.
 
-I test di integrazione utilizzano PostgreSQL tramite Testcontainers e non dipendono dal database locale.
+---
 
-## Test frontend
+## API REST
 
-### Esecuzione completa dei test
+Base path:
 
-```bash
-cd frontend
-npm run test:run
+```text
+/api/routes
 ```
 
-### Modalità interattiva
+### Endpoint disponibili
 
-```bash
-cd frontend
-npm test
-```
+| Metodo   | Endpoint                | Descrizione            | Successo         |
+|----------|-------------------------|------------------------|------------------|
+| `POST`   | `/api/routes`           | Crea un itinerario     | `201 Created`    |
+| `GET`    | `/api/routes`           | Elenca gli itinerari   | `200 OK`         |
+| `GET`    | `/api/routes/{routeId}` | Recupera il dettaglio  | `200 OK`         |
+| `PUT`    | `/api/routes/{routeId}` | Aggiorna un itinerario | `200 OK`         |
+| `DELETE` | `/api/routes/{routeId}` | Elimina un itinerario  | `204 No Content` |
 
-### Controllo ESLint
-
-```bash
-cd frontend
-npm run lint
-```
-
-### Verifica della build
-
-```bash
-cd frontend
-npm run build
-```
-
-## API
+Gli endpoint che ricevono `routeId` usano un UUID nel path. Un UUID non valido produce `400 Bad Request`; una route
+valida ma inesistente produce `404 Not Found` per dettaglio, modifica ed eliminazione.
 
 ### Creazione di un itinerario
 
@@ -248,7 +386,7 @@ Esempio di richiesta:
 }
 ```
 
-In caso di creazione completata correttamente, l'API restituisce:
+In caso di successo:
 
 ```http
 201 Created
@@ -283,7 +421,7 @@ La richiesta supporta paginazione e ordinamento:
 GET /api/routes?page=0&size=20&sort=createdAt,desc
 ```
 
-### Parametri
+Parametri principali:
 
 | Parametro | Descrizione                            | Valore predefinito |
 |-----------|----------------------------------------|-------------------:|
@@ -293,9 +431,7 @@ GET /api/routes?page=0&size=20&sort=createdAt,desc
 
 La dimensione della pagina deve essere compresa tra `1` e `100`.
 
-### Campi ordinabili
-
-Sono attualmente supportati:
+Campi ordinabili:
 
 - `createdAt`;
 - `name`;
@@ -304,7 +440,7 @@ Sono attualmente supportati:
 - `distanceKm`;
 - `difficulty`.
 
-Le direzioni ammesse sono:
+Direzioni ammesse:
 
 - `asc`;
 - `desc`.
@@ -343,44 +479,102 @@ Esempio di risposta:
 }
 ```
 
-Quando non sono presenti itinerari, l'API restituisce comunque `200 OK`:
+Quando non sono presenti itinerari, l'API restituisce comunque `200 OK` con `content` vuoto.
+
+### Dettaglio itinerario
+
+```http
+GET /api/routes/{routeId}
+```
+
+Restituisce il `RouteResponse` completo.
+
+Risposte principali:
+
+- `200 OK` — itinerario trovato;
+- `400 Bad Request` — UUID non valido;
+- `404 Not Found` — itinerario inesistente;
+- `500 Internal Server Error` — errore inatteso.
+
+### Modifica itinerario
+
+```http
+PUT /api/routes/{routeId}
+```
+
+Il body usa gli stessi campi mutabili della creazione e rappresenta un aggiornamento completo della route.
+
+Esempio:
 
 ```json
 {
-  "content": [],
-  "page": 0,
-  "size": 20,
-  "totalElements": 0,
-  "totalPages": 0,
-  "first": true,
-  "last": true
+  "name": "Passo dello Stelvio aggiornato",
+  "description": "Percorso panoramico aggiornato",
+  "startLocation": "Bormio",
+  "endLocation": "Prato allo Stelvio",
+  "distanceKm": 48.20,
+  "difficulty": "HARD"
 }
 ```
+
+Risposte principali:
+
+- `200 OK` — itinerario aggiornato;
+- `400 Bad Request` — dati o UUID non validi;
+- `404 Not Found` — itinerario inesistente;
+- `500 Internal Server Error` — errore inatteso.
+
+### Eliminazione itinerario
+
+```http
+DELETE /api/routes/{routeId}
+```
+
+In caso di successo restituisce:
+
+```http
+204 No Content
+```
+
+Non viene restituito alcun body.
+
+Risposte principali:
+
+- `204 No Content` — itinerario eliminato;
+- `400 Bad Request` — UUID non valido;
+- `404 Not Found` — itinerario inesistente;
+- `500 Internal Server Error` — errore inatteso.
+
+---
+
+## Modello Route
+
+Campi principali:
+
+| Campo           | Tipo logico     | Note                           |
+|-----------------|-----------------|--------------------------------|
+| `id`            | UUID            | identificatore univoco         |
+| `name`          | stringa         | obbligatorio, max 120          |
+| `description`   | stringa         | opzionale, max 2000            |
+| `startLocation` | stringa         | obbligatorio, max 120          |
+| `endLocation`   | stringa         | obbligatorio, max 120          |
+| `distanceKm`    | numero decimale | obbligatorio e positivo        |
+| `difficulty`    | enum            | `EASY`, `MEDIUM`, `HARD`       |
+| `createdAt`     | timestamp       | data di creazione              |
+| `updatedAt`     | timestamp       | data dell'ultimo aggiornamento |
+
+Il dominio espone operazioni dedicate alla creazione e all'aggiornamento e mantiene le proprie invarianti
+indipendentemente dalla validazione HTTP.
+
+---
 
 ## Gestione degli errori API
 
-Gli errori HTTP utilizzano una struttura comune.
-
-Esempio:
+Gli errori HTTP con body JSON usano una struttura comune:
 
 ```json
 {
-  "timestamp": "2026-07-29T10:00:00Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "size must be between 1 and 100",
-  "path": "/api/routes",
-  "fieldErrors": {}
-}
-```
-
-Gli errori di validazione relativi ai campi possono contenere dettagli nella proprietà `fieldErrors`.
-
-Esempio:
-
-```json
-{
-  "timestamp": "2026-07-29T10:00:00Z",
+  "timestamp": "2026-09-12T08:00:00Z",
   "status": 400,
   "error": "Bad Request",
   "message": "One or more fields are invalid",
@@ -391,52 +585,260 @@ Esempio:
 }
 ```
 
+Campi:
+
+- `timestamp`;
+- `status`;
+- `error`;
+- `message`;
+- `path`;
+- `fieldErrors`.
+
+Gli errori di validazione possono valorizzare `fieldErrors`. Per errori non legati a singoli campi, la mappa resta
+vuota.
+
+La traduzione delle eccezioni applicative verso i codici HTTP è centralizzata nel `GlobalExceptionHandler`.
+
+---
+
 ## Documentazione OpenAPI
 
-Con il backend in esecuzione, la documentazione è disponibile ai seguenti indirizzi:
+Con il backend in esecuzione:
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 - OpenAPI YAML: `http://localhost:8080/v3/api-docs.yaml`
 
-La documentazione include attualmente:
+La documentazione copre:
 
 - `POST /api/routes`;
 - `GET /api/routes`;
-- modelli di richiesta e risposta;
-- parametri di paginazione e ordinamento;
+- `GET /api/routes/{routeId}`;
+- `PUT /api/routes/{routeId}`;
+- `DELETE /api/routes/{routeId}`;
+- request e response principali;
+- parametri path/query;
+- paginazione e ordinamento;
 - codici HTTP principali;
 - struttura standard degli errori.
 
+Il documento OpenAPI generato viene verificato anche tramite test di integrazione dedicati.
+
+---
+
+## Test backend
+
+### Test unitari e web
+
+```bash
+cd backend
+./mvnw test
+```
+
+Questo comando esegue i test gestiti da Maven Surefire, tra cui:
+
+- test di dominio;
+- test unitari dei service;
+- test web dei controller con MockMvc.
+
+### Suite completa
+
+```bash
+cd backend
+./mvnw clean verify
+```
+
+Questo comando esegue anche i test di integrazione con suffisso `IT`, gestiti tramite Maven Failsafe.
+
+I test di integrazione usano PostgreSQL tramite Testcontainers e non dipendono dal database locale.
+
+La strategia di M1 comprende test verticali sui flussi principali di creazione, dettaglio, modifica ed eliminazione,
+mentre paginazione e ordinamento sono verificati nei livelli in cui portano maggior valore senza duplicare inutilmente
+la copertura.
+
+---
+
+## Test frontend
+
+### Esecuzione completa dei test
+
+```bash
+cd frontend
+npm run test:run
+```
+
+### Modalità interattiva
+
+```bash
+cd frontend
+npm test
+```
+
+### Controllo ESLint
+
+```bash
+cd frontend
+npm run lint
+```
+
+### Verifica della build
+
+```bash
+cd frontend
+npm run build
+```
+
+I test frontend usano:
+
+- Vitest come test runner;
+- Testing Library per il comportamento osservabile dei componenti;
+- `userEvent` per simulare le interazioni utente;
+- MSW per intercettare le richieste HTTP reali dei client API;
+- `MemoryRouter` nei test che dipendono dal routing.
+
+---
+
+## Standard di sviluppo consolidati in M1
+
+### Backend
+
+- controller sottile;
+- DTO separati dalle entity JPA;
+- DTO distinti per casi d'uso differenti quando devono poter evolvere separatamente;
+- dominio indipendente dal contratto HTTP;
+- service come confine transazionale;
+- `@Transactional(readOnly = true)` per le letture quando appropriato;
+- dirty checking JPA per gli update delle entity managed;
+- repository standard prima di query personalizzate;
+- Flyway come unico proprietario dello schema;
+- `ddl-auto: validate`, mai `update`;
+- error handling centralizzato;
+- OpenAPI aggiornata insieme al backend;
+- test scelti in base al rischio reale, evitando duplicazioni inutili.
+
+### Frontend
+
+- `*Api.js` per HTTP, parsing ed errori;
+- `*Page.jsx` per orchestrare router, rete e stati asincroni;
+- componenti presentazionali basati su props;
+- `RouteForm` condiviso tra create e update;
+- validazione e normalizzazione in funzioni pure;
+- `AbortController` per GET legate al lifecycle;
+- `ApiRequestError` come errore HTTP condiviso;
+- `handleJsonResponse` come gestione comune delle response;
+- `Link` per navigazione e `button` per azioni;
+- `role="status"` per loading e `role="alert"` per errori;
+- test basati su comportamento utente e semantica accessibile;
+- MSW preferito al mock diretto di `fetch`.
+
+---
+
 ## Workflow Git
 
-Il progetto utilizza i seguenti branch principali:
+Branch principali:
 
 - `main`: versioni stabili e rilasciabili;
-- `develop`: integrazione delle feature;
-- `feature/*`: sviluppo delle singole user story.
+- `develop`: integrazione delle feature completate;
+- `feature/*`: sviluppo di singole user story o funzionalità;
+- `fix/*`: correzioni;
+- `hotfix/*`: correzioni urgenti su una release;
+- `chore/*` / `docs/*`: attività tecniche o documentali isolate.
 
-Esempi:
+Esempi di branch usati in M1:
 
 ```text
 feature/create-route
 feature/list-routes
 feature/route-details
+feature/update-route
+feature/delete-route
 ```
+
+I commit devono essere piccoli e descrittivi. Esempi:
+
+```text
+feat(route): add route delete api frontend
+feat(route): add route delete button in route details page
+refactor(route): replace history entry after route update
+docs(readme): update project status after M1
+```
+
+---
+
+## Definition of Done
+
+Prima del merge di una user story:
+
+- criteri di accettazione soddisfatti;
+- backend completato;
+- frontend completato quando previsto;
+- migration Flyway presente solo se necessaria;
+- test unitari e web verdi;
+- test di integrazione verdi;
+- `./mvnw clean verify` completato con successo;
+- OpenAPI aggiornata e verificata;
+- Swagger UI controllata manualmente;
+- `npm run test:run` verde;
+- `npm run lint` verde;
+- `npm run build` verde;
+- flusso principale verificato manualmente dal browser;
+- commit puliti;
+- merge in `develop`.
+
+---
+
+## Prima release — `v0.1.0`
+
+La prima release stabile di MotoRoute comprende l'intera M1 e quindi il CRUD completo degli itinerari:
+
+```text
+Create  -> POST   /api/routes
+Read    -> GET    /api/routes
+Read    -> GET    /api/routes/{routeId}
+Update  -> PUT    /api/routes/{routeId}
+Delete  -> DELETE /api/routes/{routeId}
+```
+
+Prima di creare il tag della release devono risultare verdi:
+
+```bash
+cd backend
+./mvnw clean verify
+```
+
+```bash
+cd frontend
+npm run test:run
+npm run lint
+npm run build
+```
+
+Il flusso CRUD deve inoltre essere verificato manualmente dal browser.
+
+Tag previsto:
+
+```text
+v0.1.0
+```
+
+---
 
 ## Prossimi sviluppi
 
-La prossima user story prevista è:
+La prossima milestone è:
 
 ```text
-US-1.3 — Dettaglio itinerario
+M2 — Waypoint e composizione dell'itinerario
 ```
 
-L'endpoint previsto sarà:
+La prima user story prevista è:
 
-```http
-GET /api/routes/{routeId}
+```text
+US-2.1 — Creazione waypoint
 ```
 
-La documentazione completa del progetto, i diagrammi architetturali, gli screenshot e le informazioni sul deployment
-verranno aggiunti nelle milestone successive.
+La nuova feature introdurrà il modello dei waypoint e la relazione con gli itinerari. Le decisioni architetturali di M1
+rimangono la baseline da mantenere anche nelle milestone successive.
+
+Non vengono introdotti in anticipo elementi come soft delete, autorizzazione/ownership, PostGIS, query native o design
+system completo se non richiesti da una user story concreta.
