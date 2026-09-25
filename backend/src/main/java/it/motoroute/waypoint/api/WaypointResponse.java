@@ -30,6 +30,7 @@ public record WaypointResponse(
     String name,
 
     @Schema(
+        description = "Waypoint description",
         example = "Descrizione opzionale",
         nullable = true
     )
