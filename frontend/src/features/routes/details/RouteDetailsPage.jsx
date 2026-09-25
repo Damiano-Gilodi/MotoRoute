@@ -10,7 +10,7 @@ import {
 
 import {RouteDetails} from "./RouteDetails.jsx";
 import {getRoute} from "./getRouteApi.js";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {deleteRoute} from "../delete/deleteRouteApi.js";
 
 export function RouteDetailsPage() {

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {createRoute} from "./createRouteApi";
 
 import {useNavigate} from "react-router";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {RouteForm} from "../form/RouteForm.jsx";
 
 export function CreateRoutePage() {
@@ -45,7 +45,7 @@ export function CreateRoutePage() {
   return (
     <main>
       <h1>Crea itinerario</h1>
-      
+
       {apiError && (
         <p role="alert">
           {apiError}

@@ -10,7 +10,7 @@ import {
 
 import {server} from "../../../test/server";
 import {listRoutes} from "./listRoutesApi";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 const apiUrl = new URL(
   "/api/routes",

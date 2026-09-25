@@ -11,7 +11,7 @@ import {
 } from "./listRoutesApi.js";
 import {RouteCard} from "./RouteCard.jsx";
 import {RoutesPagination} from "./RoutesPagination.jsx";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 export function RoutesPage() {
   const [page, setPage] = useState(0);
