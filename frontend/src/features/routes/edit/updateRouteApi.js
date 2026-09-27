@@ -1,4 +1,4 @@
-import {handleJsonResponse} from "../api/apiResponse.js";
+import {handleJsonResponse} from "../../../shared/api/apiResponse.js";
 
 export async function updateRoute({
                                     routeId,

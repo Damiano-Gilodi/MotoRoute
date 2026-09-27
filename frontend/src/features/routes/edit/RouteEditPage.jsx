@@ -7,7 +7,7 @@ import {
   useParams,
 } from "react-router";
 
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {getRoute} from "../details/getRouteApi.js";
 import {RouteForm} from "../form/RouteForm.jsx";
 import {updateRoute} from "./updateRouteApi.js";

@@ -18,19 +18,32 @@ public record RouteSummaryResponse(
     )
     UUID id,
 
-    @Schema(example = "Passo dello Stelvio")
+    @Schema(
+        description = "Route name",
+        example = "Passo dello Stelvio"
+    )
     String name,
 
-    @Schema(example = "Bormio")
+    @Schema(
+        description = "Route start location",
+        example = "Bormio"
+    )
     String startLocation,
 
-    @Schema(example = "Prato allo Stelvio")
+    @Schema(
+        description = "Route end location",
+        example = "Prato allo Stelvio"
+    )
     String endLocation,
 
-    @Schema(example = "47.50")
+    @Schema(
+        description = "Route distance in kilometres",
+        example = "47.50"
+    )
     BigDecimal distanceKm,
 
     @Schema(
+        description = "Route difficulty level",
         example = "HARD",
         allowableValues = {"EASY", "MEDIUM", "HARD"}
     )

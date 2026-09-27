@@ -176,4 +176,68 @@ class OpenApiIT {
                 "$.paths['/api/routes'].get.responses['500']"
             ).exists());
     }
+
+    @Test
+    void shouldExposeCreateWaypointOpenApiDocumentation() throws Exception {
+
+        mockMvc.perform(get("/v3/api-docs"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(
+                "application/json"
+            ))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.parameters[0].name"
+            ).value("routeId"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.parameters[0].in"
+            ).value("path"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.parameters[0].required"
+            ).value(true))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.parameters[0].schema.type"
+            ).value("string"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.parameters[0].schema.format"
+            ).value("uuid"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.requestBody"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.requestBody.required"
+            ).value(true))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.requestBody.content['application/json'].schema['$ref']"
+            ).value("#/components/schemas/CreateWaypointRequest"))
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['201']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['400']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['404']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['409']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['500']"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['201'].headers.Location"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.paths['/api/routes/{routeId}/waypoints'].post.responses['201'].content['application/json'].schema['$ref']"
+            ).value("#/components/schemas/WaypointResponse"))
+            .andExpect(jsonPath(
+                "$.components.schemas.CreateWaypointRequest"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointResponse"
+            ).exists());
+    }
 }

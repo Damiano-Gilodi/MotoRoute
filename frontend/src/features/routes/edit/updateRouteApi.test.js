@@ -6,7 +6,7 @@ import {
 } from "vitest";
 
 import {server} from "../../../test/server.js";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {updateRoute} from "./updateRouteApi.js";
 
 const routeId =

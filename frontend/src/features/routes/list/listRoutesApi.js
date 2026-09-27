@@ -1,4 +1,4 @@
-import {handleJsonResponse} from "../api/apiResponse.js";
+import {handleJsonResponse} from "../../../shared/api/apiResponse.js";
 
 export const DEFAULT_ROUTE_PAGE = 0;
 export const DEFAULT_ROUTE_PAGE_SIZE = 20;

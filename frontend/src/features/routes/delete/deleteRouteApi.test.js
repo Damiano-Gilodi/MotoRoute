@@ -10,7 +10,7 @@ import {
 
 import {server} from "../../../test/server.js";
 import {deleteRoute} from "./deleteRouteApi.js";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 const routeId =
   "11111111-1111-1111-1111-111111111111";

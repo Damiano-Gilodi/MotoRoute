@@ -3,7 +3,7 @@ import {describe, expect, test} from "vitest";
 
 import {server} from "../../../test/server";
 import {createRoute} from "./createRouteApi";
-import {ApiRequestError} from "../api/ApiRequestError.js";
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 const apiUrl = new URL(
   "/api/routes",
