@@ -133,6 +133,9 @@ describe("RouteDetailsPage", () => {
       `/routes/${routeId}/edit`,
     );
 
+    expect(screen.getByRole("link", {name: "Aggiungi waypoint"}))
+      .toHaveAttribute("href", `/routes/${routeId}/waypoints/new`);
+
     expect(
       screen.queryByRole("status"),
     ).not.toBeInTheDocument();

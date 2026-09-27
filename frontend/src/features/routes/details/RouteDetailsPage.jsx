@@ -140,6 +140,10 @@ export function RouteDetailsPage() {
               Modifica itinerario
             </Link>
 
+            <Link to={`/routes/${route.id}/waypoints/new`}>
+              Aggiungi waypoint
+            </Link>
+
             <button type="button" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "Eliminazione in corso..." : "Elimina itinerario"}
             </button>
