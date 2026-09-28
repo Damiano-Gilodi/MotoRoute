@@ -187,6 +187,10 @@ public class WaypointController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(
+        summary = "List route waypoints",
+        description = "Returns a paginated list of waypoints ordered by position"
+    )
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",

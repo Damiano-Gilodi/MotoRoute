@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -238,6 +239,74 @@ class OpenApiIT {
             ).exists())
             .andExpect(jsonPath(
                 "$.components.schemas.WaypointResponse"
+            ).exists());
+    }
+
+    @Test
+    void shouldExposeListWaypointsOpenApiDocumentation() throws Exception {
+        String endpoint = "$.paths['/api/routes/{routeId}/waypoints'].get";
+
+        mockMvc.perform(get("/v3/api-docs"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith("application/json"))
+            .andExpect(jsonPath(endpoint).exists())
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'routeId')].in"
+            ).value(hasItem("path")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'routeId')].required"
+            ).value(hasItem(true)))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'routeId')].schema.type"
+            ).value(hasItem("string")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'routeId')].schema.format"
+            ).value(hasItem("uuid")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'page')].in"
+            ).value(hasItem("query")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'page')].schema.type"
+            ).value(hasItem("integer")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'size')].in"
+            ).value(hasItem("query")))
+            .andExpect(jsonPath(
+                endpoint + ".parameters[?(@.name == 'size')].schema.type"
+            ).value(hasItem("integer")))
+            .andExpect(jsonPath(endpoint + ".responses['200']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['400']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['404']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['500']").exists())
+            .andExpect(jsonPath(
+                endpoint + ".responses['200'].content['application/json'].schema['$ref']"
+            ).value("#/components/schemas/WaypointPageResponse"))
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointSummaryResponse"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.content"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.page"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.size"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.totalElements"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.totalPages"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.first"
+            ).exists())
+            .andExpect(jsonPath(
+                "$.components.schemas.WaypointPageResponse.properties.last"
             ).exists());
     }
 }
