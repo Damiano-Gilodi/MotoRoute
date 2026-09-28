@@ -25,12 +25,6 @@ public record WaypointSummaryResponse(
     String name,
 
     @Schema(
-        description = "Description of the waypoint",
-        example = "Vista sulle montagne"
-    )
-    String description,
-
-    @Schema(
         description = "Position of the waypoint",
         example = "1"
     )

@@ -206,7 +206,6 @@ public class WaypointController {
                                 {
                                     "id": "22222222-2222-2222-2222-222222222222",
                                     "name": "Punto panoramico",
-                                    "description": "Belvedere con vista sulle montagne",
                                     "position": 1,
                                     "latitude": 45.123456,
                                     "longitude": 8.765432,

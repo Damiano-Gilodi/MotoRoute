@@ -52,7 +52,6 @@ public class WaypointControllerTest {
     private static final WaypointSummaryResponse VALID_SUMMARY = new WaypointSummaryResponse(
         WAYPOINT_ID,
         "Punto panoramico",
-        "Belvedere con vista sulle montagne",
         1,
         new BigDecimal("45.123456"),
         new BigDecimal("8.765432"),
@@ -268,7 +267,6 @@ public class WaypointControllerTest {
             .andExpect(jsonPath("$.content.length()").value(1))
             .andExpect(jsonPath("$.content[0].id").value(WAYPOINT_ID.toString()))
             .andExpect(jsonPath("$.content[0].name").value("Punto panoramico"))
-            .andExpect(jsonPath("$.content[0].description").value("Belvedere con vista sulle montagne"))
             .andExpect(jsonPath("$.content[0].position").value(1))
             .andExpect(jsonPath("$.content[0].latitude").value(45.123456))
             .andExpect(jsonPath("$.content[0].longitude").value(8.765432))
