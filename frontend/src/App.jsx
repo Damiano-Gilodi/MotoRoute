@@ -9,6 +9,7 @@ import {RoutesPage} from "./features/routes/list/RoutesPage";
 import {RouteDetailsPage} from "./features/routes/details/RouteDetailsPage.jsx";
 import {RouteEditPage} from "./features/routes/edit/RouteEditPage.jsx";
 import {CreateWaypointPage} from "./features/waypoints/create/CreateWaypointPage.jsx";
+import {WaypointsPage} from "./features/waypoints/list/WaypointsPage.jsx";
 
 export default function App() {
   return (
@@ -41,6 +42,11 @@ export default function App() {
       <Route
         path="/routes/:routeId/edit"
         element={<RouteEditPage/>}
+      />
+
+      <Route
+        path="/routes/:routeId/waypoints"
+        element={<WaypointsPage/>}
       />
 
       <Route
