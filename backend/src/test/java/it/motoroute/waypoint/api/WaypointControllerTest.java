@@ -14,11 +14,13 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -46,6 +48,15 @@ public class WaypointControllerTest {
           "longitude": 8.765432
         }
         """;
+
+    private static final WaypointSummaryResponse VALID_SUMMARY = new WaypointSummaryResponse(
+        WAYPOINT_ID,
+        "Punto panoramico",
+        1,
+        new BigDecimal("45.123456"),
+        new BigDecimal("8.765432"),
+        CREATED_AT
+    );
 
     @Test
     void shouldReturn201AndLocationWhenRequestIsValid() throws Exception {
@@ -205,5 +216,124 @@ public class WaypointControllerTest {
 
         verify(waypointService).createWaypoint(eq(ROUTE_ID), any(CreateWaypointRequest.class));
         verifyNoMoreInteractions(waypointService);
+    }
+
+    @Test
+    void shouldReturn200WithEmptyContentWhenNoWaypointsExist() throws Exception {
+
+        WaypointPageResponse response = new WaypointPageResponse(
+            List.of(),
+            0,
+            20,
+            0,
+            0,
+            true,
+            true
+        );
+
+        when(waypointService.listWaypoints(ROUTE_ID, 0, 20)).thenReturn(response);
+
+        mockMvc.perform(get("/api/routes/{routeId}/waypoints", ROUTE_ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isEmpty())
+            .andExpect(jsonPath("$.totalElements").value(0))
+            .andExpect(jsonPath("$.totalPages").value(0))
+            .andExpect(jsonPath("$.first").value(true))
+            .andExpect(jsonPath("$.last").value(true));
+
+        verify(waypointService).listWaypoints(ROUTE_ID, 0, 20);
+        verifyNoMoreInteractions(waypointService);
+    }
+
+    @Test
+    void shouldReturn200WhenWaypointsExist() throws Exception {
+
+        WaypointPageResponse response = new WaypointPageResponse(
+            List.of(VALID_SUMMARY),
+            0,
+            20,
+            1,
+            1,
+            true,
+            true
+        );
+
+        when(waypointService.listWaypoints(ROUTE_ID, 0, 20)).thenReturn(response);
+
+        mockMvc.perform(get("/api/routes/{routeId}/waypoints", ROUTE_ID))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.content").isArray())
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].id").value(WAYPOINT_ID.toString()))
+            .andExpect(jsonPath("$.content[0].name").value("Punto panoramico"))
+            .andExpect(jsonPath("$.content[0].position").value(1))
+            .andExpect(jsonPath("$.content[0].latitude").value(45.123456))
+            .andExpect(jsonPath("$.content[0].longitude").value(8.765432))
+            .andExpect(jsonPath("$.content[0].createdAt").value("2026-07-29T10:00:00Z"))
+            .andExpect(jsonPath("$.page").value(0))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.totalPages").value(1))
+            .andExpect(jsonPath("$.first").value(true))
+            .andExpect(jsonPath("$.last").value(true));
+
+        verify(waypointService).listWaypoints(ROUTE_ID, 0, 20);
+        verifyNoMoreInteractions(waypointService);
+    }
+
+    @Test
+    void shouldUseProvidedPaginationParameters() throws Exception {
+        WaypointPageResponse response = new WaypointPageResponse(
+            List.of(),
+            1,
+            5,
+            0,
+            0,
+            false,
+            true
+        );
+
+        when(waypointService.listWaypoints(ROUTE_ID, 1, 5)).thenReturn(response);
+
+        mockMvc.perform(get("/api/routes/{routeId}/waypoints", ROUTE_ID)
+                .param("page", "1")
+                .param("size", "5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(5));
+
+        verify(waypointService).listWaypoints(ROUTE_ID, 1, 5);
+        verifyNoMoreInteractions(waypointService);
+    }
+
+    @Test
+    void shouldReturn404WhenWaypointsRouteIdDoesNotExist() throws Exception {
+
+        when(waypointService.listWaypoints(ROUTE_ID, 1, 5)).thenThrow(new RouteNotFoundException(ROUTE_ID));
+
+        mockMvc.perform(get("/api/routes/{routeId}/waypoints", ROUTE_ID)
+                .param("page", "1")
+                .param("size", "5"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.message").value("Route not found with id: " + ROUTE_ID))
+            .andExpect(jsonPath("$.path").value("/api/routes/" + ROUTE_ID + "/waypoints"))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
+    }
+
+    @Test
+    void shouldReturn400WhenPageSizeExceedsMaximum() throws Exception {
+
+        when(waypointService.listWaypoints(ROUTE_ID, 1, 101)).thenThrow(new IllegalArgumentException("size must be between 1 and 100"));
+
+        mockMvc.perform(get("/api/routes/{routeId}/waypoints", ROUTE_ID)
+                .param("page", "1")
+                .param("size", "101"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("size must be between 1 and 100"))
+            .andExpect(jsonPath("$.path").value("/api/routes/" + ROUTE_ID + "/waypoints"))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
     }
 }

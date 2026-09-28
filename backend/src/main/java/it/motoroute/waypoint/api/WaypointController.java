@@ -186,4 +186,122 @@ public class WaypointController {
 
         return ResponseEntity.created(location).body(response);
     }
+
+    @Operation(
+        summary = "List route waypoints",
+        description = "Returns a paginated list of waypoints ordered by position"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "List of waypoints in the specified route",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = WaypointPageResponse.class),
+                examples = @ExampleObject(
+                    name = "Paginated waypoint list",
+                    value = """
+                        {
+                            "content": [
+                                {
+                                    "id": "22222222-2222-2222-2222-222222222222",
+                                    "name": "Punto panoramico",
+                                    "position": 1,
+                                    "latitude": 45.123456,
+                                    "longitude": 8.765432,
+                                    "createdAt": "2026-07-29T10:00:00Z"
+                                }
+                            ],
+                            "page": 0,
+                            "size": 20,
+                            "totalElements": 1,
+                            "totalPages": 1,
+                            "first": true,
+                            "last": true
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid page or size parameters",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Invalid page size",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "size must be between 1 and 100",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Route not found",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 404,
+                          "error": "Not Found",
+                          "message": "Route not found with id: 11111111-1111-1111-1111-111111111111",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @GetMapping
+    public ResponseEntity<WaypointPageResponse> listWaypoints(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            example = "11111111-1111-1111-1111-111111111111",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID routeId,
+
+        @Parameter(
+            description = "Zero-based page number",
+            example = "0"
+        )
+        @RequestParam(defaultValue = "0") int page,
+
+        @Parameter(
+            description = "Number of waypoints per page, from 1 to 100",
+            example = "20"
+        )
+        @RequestParam(defaultValue = "20") int size
+    ) {
+
+        WaypointPageResponse response = waypointService.listWaypoints(routeId, page, size);
+
+        return ResponseEntity.ok(response);
+    }
 }

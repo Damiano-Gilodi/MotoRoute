@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -300,5 +303,43 @@ public class WaypointRepositoryIT {
         assertThat(reloadedWaypoint2.getRouteId()).isEqualTo(savedRoute2.getId());
         assertThat(reloadedWaypoint1.getPosition()).isEqualTo(1);
         assertThat(reloadedWaypoint2.getPosition()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldListWaypointsOrderedByPosition() {
+        Waypoint waypoint1 = Waypoint.create(
+            savedRoute,
+            "name1",
+            "waypoint description",
+            1,
+            new BigDecimal("45.234534"),
+            new BigDecimal("125.34455")
+        );
+
+        Waypoint waypoint2 = Waypoint.create(
+            savedRoute,
+            "name2",
+            null,
+            2,
+            new BigDecimal("45.234534"),
+            new BigDecimal("125.34455")
+        );
+
+        waypointRepository.saveAndFlush(waypoint2);
+        waypointRepository.saveAndFlush(waypoint1);
+
+        entityManager.clear();
+
+        Page<Waypoint> waypointPage = waypointRepository.findAllByRoute_Id(savedRoute.getId(), PageRequest.of(0, 10, Sort.by("position")));
+
+        assertThat(waypointPage.getContent()).hasSize(2);
+        assertThat(waypointPage.getContent()).extracting(Waypoint::getPosition).containsExactly(1, 2);
+        assertThat(waypointPage.getContent()).extracting(Waypoint::getName).containsExactly("name1", "name2");
+        assertThat(waypointPage.getNumber()).isEqualTo(0);
+        assertThat(waypointPage.getSize()).isEqualTo(10);
+        assertThat(waypointPage.getTotalElements()).isEqualTo(2);
+        assertThat(waypointPage.getTotalPages()).isEqualTo(1);
+        assertThat(waypointPage.isFirst()).isTrue();
+        assertThat(waypointPage.isLast()).isTrue();
     }
 }
