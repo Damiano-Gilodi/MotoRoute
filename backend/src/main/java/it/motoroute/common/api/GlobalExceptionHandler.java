@@ -95,26 +95,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(apiError);
     }
 
-    @ExceptionHandler(RouteNotFoundException.class)
-    public ResponseEntity<ApiError> handleRouteNotFound(
-        RouteNotFoundException exception,
-        HttpServletRequest request
-    ) {
-        ApiError apiError = buildError(
-            HttpStatus.NOT_FOUND,
-            exception.getMessage(),
-            request.getRequestURI(),
-            Map.of()
-        );
-
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(apiError);
-    }
-
-    @ExceptionHandler(WaypointNotFoundException.class)
-    public ResponseEntity<ApiError> handleWaypointNotFound(
-        WaypointNotFoundException exception,
+    @ExceptionHandler({
+        RouteNotFoundException.class,
+        WaypointNotFoundException.class
+    })
+    public ResponseEntity<ApiError> handleNotFound(
+        RuntimeException exception,
         HttpServletRequest request
     ) {
         ApiError apiError = buildError(
@@ -139,9 +125,7 @@ public class GlobalExceptionHandler {
             Map.of()
         );
 
-        return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(apiError);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
 
     @ExceptionHandler(Exception.class)
@@ -156,9 +140,7 @@ public class GlobalExceptionHandler {
             Map.of()
         );
 
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(apiError);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
     }
 
     private ApiError buildError(
