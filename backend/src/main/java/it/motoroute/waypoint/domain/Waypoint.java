@@ -74,6 +74,28 @@ public class Waypoint {
         return waypoint;
     }
 
+    public void update(
+        String name,
+        String description,
+        Integer position,
+        BigDecimal latitude,
+        BigDecimal longitude
+    ) {
+
+        String validatedName = validateName(name);
+        String validatedDescription = validateDescription(description);
+        Integer validatedPosition = validatePosition(position);
+        BigDecimal validatedLatitude = validateLatitude(latitude);
+        BigDecimal validatedLongitude = validateLongitude(longitude);
+        
+        this.name = validatedName;
+        this.description = validatedDescription;
+        this.position = validatedPosition;
+        this.latitude = validatedLatitude;
+        this.longitude = validatedLongitude;
+        this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
+    }
+
     private static Route validateRoute(Route route) {
         if (route == null) {
             throw new IllegalArgumentException("route must not be null");

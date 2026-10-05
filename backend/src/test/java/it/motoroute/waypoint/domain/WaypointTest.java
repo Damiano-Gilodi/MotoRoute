@@ -7,6 +7,8 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -215,5 +217,76 @@ public class WaypointTest {
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("longitude must be between -180 and 180");
+    }
+
+    @Test
+    void shouldUpdateValidWaypoint() {
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "Punto di interesse",
+            "Un punto di riferimento",
+            1,
+            new BigDecimal("45.464231"),
+            new BigDecimal("150.191383")
+        );
+
+        UUID originalId = waypoint.getId();
+        UUID originalRouteId = waypoint.getRouteId();
+        OffsetDateTime originalCreatedAt = waypoint.getCreatedAt();
+        OffsetDateTime originalUpdatedAt = waypoint.getUpdatedAt();
+
+        waypoint.update(
+            " Modifica Punto ",
+            "  Modifica Percorso  ",
+            5,
+            new BigDecimal("80.464231"),
+            new BigDecimal("120.191383")
+        );
+
+        assertThat(waypoint.getId()).isEqualTo(originalId);
+        assertThat(waypoint.getRouteId()).isEqualTo(originalRouteId);
+        assertThat(waypoint.getName()).isEqualTo("Modifica Punto");
+        assertThat(waypoint.getDescription()).isEqualTo("Modifica Percorso");
+        assertThat(waypoint.getPosition()).isEqualTo(5);
+        assertThat(waypoint.getLatitude()).isEqualByComparingTo("80.464231");
+        assertThat(waypoint.getLongitude()).isEqualByComparingTo("120.191383");
+        assertThat(waypoint.getCreatedAt()).isEqualTo(originalCreatedAt);
+        assertThat(waypoint.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt);
+    }
+
+    @Test
+    void shouldNotPartiallyUpdateWaypointWhenNewValuesAreInvalid() {
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "Punto di interesse",
+            "Un punto di riferimento",
+            1,
+            new BigDecimal("45.464231"),
+            new BigDecimal("150.191383")
+        );
+        
+        OffsetDateTime originalUpdatedAt = waypoint.getUpdatedAt();
+
+        assertThatThrownBy(() ->
+            waypoint.update(
+                "Punto di interesse",
+                "Un punto di riferimento",
+                -1,
+                new BigDecimal("45.464231"),
+                new BigDecimal("150.191383")
+            )
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(
+                "position must be greater than zero"
+            );
+
+        assertThat(waypoint.getName()).isEqualTo("Punto di interesse");
+        assertThat(waypoint.getDescription()).isEqualTo("Un punto di riferimento");
+        assertThat(waypoint.getPosition()).isEqualTo(1);
+        assertThat(waypoint.getLatitude()).isEqualByComparingTo("45.464231");
+        assertThat(waypoint.getLongitude()).isEqualByComparingTo("150.191383");
+        assertThat(waypoint.getUpdatedAt()).isEqualTo(originalUpdatedAt);
+
     }
 }
