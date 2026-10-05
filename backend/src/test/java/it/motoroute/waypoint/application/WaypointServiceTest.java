@@ -4,10 +4,7 @@ import it.motoroute.route.application.RouteNotFoundException;
 import it.motoroute.route.domain.Difficulty;
 import it.motoroute.route.domain.Route;
 import it.motoroute.route.infrastructure.RouteRepository;
-import it.motoroute.waypoint.api.CreateWaypointRequest;
-import it.motoroute.waypoint.api.WaypointPageResponse;
-import it.motoroute.waypoint.api.WaypointResponse;
-import it.motoroute.waypoint.api.WaypointSummaryResponse;
+import it.motoroute.waypoint.api.*;
 import it.motoroute.waypoint.domain.Waypoint;
 import it.motoroute.waypoint.infrastructure.WaypointRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.*;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -241,5 +239,174 @@ public class WaypointServiceTest {
         assertThat(response.last()).isTrue();
 
         verify(mockWaypointRepository).findAllByRoute_Id(routeId, pageable);
+    }
+
+    @Test
+    void shouldUpdateWaypoint() {
+
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "name",
+            "waypoint description",
+            1,
+            new BigDecimal("45.234534"),
+            new BigDecimal("125.34455")
+        );
+
+        UUID waypointId = waypoint.getId();
+        UUID routeId = waypoint.getRouteId();
+        OffsetDateTime createdAt = waypoint.getCreatedAt();
+        OffsetDateTime updatedAt = waypoint.getUpdatedAt();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId)).thenReturn(Optional.of(waypoint));
+
+        UpdateWaypointRequest request = new UpdateWaypointRequest(
+            "name modifica",
+            "waypoint description modifica",
+            2,
+            new BigDecimal("24.4534"),
+            new BigDecimal("15.34455")
+        );
+
+        when(mockWaypointRepository.existsByRoute_IdAndPosition(routeId, request.position())).thenReturn(false);
+
+        WaypointResponse updatedWaypoint = waypointService.updateWaypoint(routeId, waypointId, request);
+
+        assertThat(updatedWaypoint.id()).isEqualTo(waypointId);
+        assertThat(updatedWaypoint.routeId()).isEqualTo(routeId);
+        assertThat(updatedWaypoint.name()).isEqualTo(request.name());
+        assertThat(updatedWaypoint.description()).isEqualTo(request.description());
+        assertThat(updatedWaypoint.position()).isEqualTo(request.position());
+        assertThat(updatedWaypoint.latitude()).isEqualTo(request.latitude());
+        assertThat(updatedWaypoint.longitude()).isEqualTo(request.longitude());
+        assertThat(updatedWaypoint.createdAt()).isEqualTo(createdAt);
+        assertThat(updatedWaypoint.updatedAt()).isAfterOrEqualTo(updatedAt);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+        verify(mockWaypointRepository).existsByRoute_IdAndPosition(routeId, request.position());
+    }
+
+    @Test
+    void shouldRejectUpdateWhenRouteDoesNotExist() {
+        UUID waypointId = UUID.randomUUID();
+
+        UpdateWaypointRequest request = new UpdateWaypointRequest(
+            "name modifica",
+            "waypoint description modifica",
+            2,
+            new BigDecimal("24.4534"),
+            new BigDecimal("15.34455")
+        );
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(false);
+
+        assertThatThrownBy(() -> waypointService.updateWaypoint(routeId, waypointId, request))
+            .isInstanceOf(RouteNotFoundException.class)
+            .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verifyNoInteractions(mockWaypointRepository);
+    }
+
+    @Test
+    void shouldRejectUpdateWhenWaypointDoesNotExistInRoute() {
+        UUID waypointId = UUID.randomUUID();
+
+        UpdateWaypointRequest request = new UpdateWaypointRequest(
+            "name modifica",
+            "waypoint description modifica",
+            2,
+            new BigDecimal("24.4534"),
+            new BigDecimal("15.34455")
+        );
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId))
+            .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> waypointService.updateWaypoint(routeId, waypointId, request))
+            .isInstanceOf(WaypointNotFoundException.class)
+            .hasMessage("Waypoint not found with id: " + waypointId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+        verify(mockWaypointRepository, never())
+            .existsByRoute_IdAndPosition(any(UUID.class), anyInt());
+    }
+
+    @Test
+    void shouldRejectUpdateWhenNewPositionAlreadyExists() {
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "name",
+            "waypoint description",
+            1,
+            new BigDecimal("45.234534"),
+            new BigDecimal("125.34455")
+        );
+
+        UUID waypointId = waypoint.getId();
+
+        UpdateWaypointRequest request = new UpdateWaypointRequest(
+            "name modifica",
+            "waypoint description modifica",
+            2,
+            new BigDecimal("24.4534"),
+            new BigDecimal("15.34455")
+        );
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId))
+            .thenReturn(Optional.of(waypoint));
+        when(mockWaypointRepository.existsByRoute_IdAndPosition(routeId, 2))
+            .thenReturn(true);
+
+        assertThatThrownBy(() -> waypointService.updateWaypoint(routeId, waypointId, request))
+            .isInstanceOf(WaypointPositionConflictException.class)
+            .hasMessage("Waypoint position 2 already exists in route: " + routeId);
+
+        assertThat(waypoint.getName()).isEqualTo("name");
+        assertThat(waypoint.getPosition()).isEqualTo(1);
+
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+        verify(mockWaypointRepository).existsByRoute_IdAndPosition(routeId, 2);
+    }
+
+    @Test
+    void shouldAllowUpdateWhenPositionDoesNotChange() {
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "name",
+            "waypoint description",
+            1,
+            new BigDecimal("45.234534"),
+            new BigDecimal("125.34455")
+        );
+
+        UUID waypointId = waypoint.getId();
+
+        UpdateWaypointRequest request = new UpdateWaypointRequest(
+            "name modifica",
+            "description modifica",
+            1,
+            new BigDecimal("24.4534"),
+            new BigDecimal("15.34455")
+        );
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId))
+            .thenReturn(Optional.of(waypoint));
+
+        WaypointResponse response = waypointService.updateWaypoint(routeId, waypointId, request);
+
+        assertThat(response.name()).isEqualTo("name modifica");
+        assertThat(response.description()).isEqualTo("description modifica");
+        assertThat(response.position()).isEqualTo(1);
+
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+        verify(mockWaypointRepository, never())
+            .existsByRoute_IdAndPosition(any(UUID.class), anyInt());
     }
 }

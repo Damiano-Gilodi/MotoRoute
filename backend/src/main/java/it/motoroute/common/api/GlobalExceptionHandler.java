@@ -1,6 +1,7 @@
 package it.motoroute.common.api;
 
 import it.motoroute.route.application.RouteNotFoundException;
+import it.motoroute.waypoint.application.WaypointNotFoundException;
 import it.motoroute.waypoint.application.WaypointPositionConflictException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -109,6 +110,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(apiError);
+    }
+
+    @ExceptionHandler(WaypointNotFoundException.class)
+    public ResponseEntity<ApiError> handleWaypointNotFound(
+        WaypointNotFoundException exception,
+        HttpServletRequest request
+    ) {
+        ApiError apiError = buildError(
+            HttpStatus.NOT_FOUND,
+            exception.getMessage(),
+            request.getRequestURI(),
+            Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
     @ExceptionHandler(WaypointPositionConflictException.class)
