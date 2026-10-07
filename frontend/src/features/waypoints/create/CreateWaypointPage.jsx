@@ -2,7 +2,7 @@ import {useNavigate, useParams} from "react-router";
 import {useState} from "react";
 import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {createWaypoint} from "./createWaypointApi.js";
-import {WaypointForm} from "./WaypointForm.jsx";
+import {WaypointForm} from "../form/WaypointForm.jsx";
 
 export function CreateWaypointPage() {
 
