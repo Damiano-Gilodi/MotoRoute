@@ -17,18 +17,13 @@ export function RouteEditPage() {
   const navigate = useNavigate();
 
   const [route, setRoute] = useState(null);
-  const [isLoading, setIsLoading] =
-    useState(true);
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-  const [apiError, setApiError] =
-    useState("");
-  const [serverErrors, setServerErrors] =
-    useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [serverErrors, setServerErrors] = useState({});
 
   useEffect(() => {
-    const abortController =
-      new AbortController();
+    const abortController = new AbortController();
 
     async function loadRoute() {
       setIsLoading(true);
@@ -37,31 +32,26 @@ export function RouteEditPage() {
       try {
         const response = await getRoute({
           routeId,
-          signal:
-          abortController.signal,
+          signal: abortController.signal,
         });
 
         setRoute(response);
       } catch (error) {
-        if (
-          error.name === "AbortError"
-        ) {
+        if (error.name === "AbortError") {
           return;
         }
 
         setRoute(null);
 
-        if (
-          error instanceof ApiRequestError
-        ) {
+        if (error instanceof ApiRequestError) {
           setApiError(error.message);
         } else {
-          setApiError(
-            "Impossibile caricare l’itinerario",
-          );
+          setApiError("Impossibile caricare l’itinerario");
         }
       } finally {
-        setIsLoading(false);
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -106,7 +96,7 @@ export function RouteEditPage() {
   if (isLoading) {
     return (
       <main>
-        <p>
+        <p role="status">
           Caricamento itinerario...
         </p>
       </main>

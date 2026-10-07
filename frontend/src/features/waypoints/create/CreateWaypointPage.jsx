@@ -1,11 +1,11 @@
-import {useNavigate, useParams} from "react-router";
 import {useState} from "react";
+import {useNavigate, useParams} from "react-router";
+
 import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
-import {createWaypoint} from "./createWaypointApi.js";
 import {WaypointForm} from "../form/WaypointForm.jsx";
+import {createWaypoint} from "./createWaypointApi.js";
 
 export function CreateWaypointPage() {
-
   const {routeId} = useParams();
   const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ export function CreateWaypointPage() {
       navigate(`/routes/${routeId}`);
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        setServerErrors(error.fieldErrors);
+        setServerErrors(error.fieldErrors ?? {});
         setApiError(error.message);
       } else {
         setApiError("Impossibile creare il waypoint");
@@ -36,7 +36,7 @@ export function CreateWaypointPage() {
 
   return (
     <main>
-      <h1>Crea Waypoint</h1>
+      <h1>Crea waypoint</h1>
 
       {apiError && (
         <p role="alert">

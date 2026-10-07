@@ -1,14 +1,14 @@
 import {useEffect, useState} from "react";
 import {Link, useParams} from "react-router";
 
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
+import {WaypointCard} from "./WaypointCard.jsx";
+import {WaypointPagination} from "./WaypointPagination.jsx";
 import {
   DEFAULT_WAYPOINT_PAGE,
   DEFAULT_WAYPOINT_PAGE_SIZE,
   listWaypoints
 } from "./listWaypointsApi.js";
-import {WaypointCard} from "./WaypointCard.jsx";
-import {WaypointPagination} from "./WaypointPagination.jsx";
-import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 export function WaypointsPage() {
   const {routeId} = useParams();
@@ -53,7 +53,7 @@ export function WaypointsPage() {
       }
     }
 
-    loadWaypoints();
+    void loadWaypoints();
 
     return () => {
       abortController.abort();
@@ -88,35 +88,29 @@ export function WaypointsPage() {
         </p>
       )}
 
-      {!isLoading &&
-        !apiError &&
-        waypoints.length === 0 && (
-          <p>
-            Nessun waypoint disponibile.
-          </p>
-        )}
+      {!isLoading && !apiError && waypoints.length === 0 && (
+        <p>Nessun waypoint disponibile.</p>
+      )}
 
-      {!isLoading &&
-        !apiError &&
-        waypoints.length > 0 && (
-          <>
-            <section aria-label="Elenco waypoint">
-              {waypoints.map((waypoint) => (
-                <WaypointCard
-                  key={waypoint.id}
-                  waypoint={waypoint}
-                />
-              ))}
-            </section>
+      {!isLoading && !apiError && waypoints.length > 0 && (
+        <>
+          <section aria-label="Elenco waypoint">
+            {waypoints.map((waypoint) => (
+              <WaypointCard
+                key={waypoint.id}
+                waypoint={waypoint}
+              />
+            ))}
+          </section>
 
-            <WaypointPagination
-              page={waypointPage.page}
-              totalPages={waypointPage.totalPages}
-              isLoading={isLoading}
-              onPageChange={setPage}
-            />
-          </>
-        )}
+          <WaypointPagination
+            page={waypointPage.page}
+            totalPages={waypointPage.totalPages}
+            isLoading={isLoading}
+            onPageChange={setPage}
+          />
+        </>
+      )}
     </main>
   );
 }
