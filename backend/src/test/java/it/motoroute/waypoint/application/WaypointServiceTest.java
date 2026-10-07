@@ -409,4 +409,67 @@ public class WaypointServiceTest {
         verify(mockWaypointRepository, never())
             .existsByRoute_IdAndPosition(any(UUID.class), anyInt());
     }
+
+    @Test
+    void shouldGetWaypoint() {
+
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "Punto panoramico",
+            "Belvedere con vista sulle montagne",
+            1,
+            new BigDecimal("45.123456"),
+            new BigDecimal("8.765432")
+        );
+
+        UUID waypointId = waypoint.getId();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId))
+            .thenReturn(Optional.of(waypoint));
+
+        WaypointResponse response = waypointService.getWaypoint(routeId, waypointId);
+
+        assertThat(response.id()).isEqualTo(waypointId);
+        assertThat(response.routeId()).isEqualTo(routeId);
+        assertThat(response.name()).isEqualTo("Punto panoramico");
+        assertThat(response.description()).isEqualTo("Belvedere con vista sulle montagne");
+        assertThat(response.position()).isEqualTo(1);
+        assertThat(response.latitude()).isEqualByComparingTo("45.123456");
+        assertThat(response.longitude()).isEqualByComparingTo("8.765432");
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+    }
+
+    @Test
+    void shouldRejectGettingWaypointWhenRouteDoesNotExist() {
+
+        UUID waypointId = UUID.randomUUID();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(false);
+
+        assertThatThrownBy(() -> waypointService.getWaypoint(routeId, waypointId))
+            .isInstanceOf(RouteNotFoundException.class)
+            .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verifyNoInteractions(mockWaypointRepository);
+    }
+
+    @Test
+    void shouldRejectGettingWaypointWhenWaypointDoesNotExistInRoute() {
+
+        UUID waypointId = UUID.randomUUID();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> waypointService.getWaypoint(routeId, waypointId))
+            .isInstanceOf(WaypointNotFoundException.class)
+            .hasMessage("Waypoint not found with id: " + waypointId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+    }
 }

@@ -304,4 +304,269 @@ public class WaypointController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+        summary = "Get a waypoint",
+        description = "Returns a waypoint belonging to the specified motorcycle route"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Waypoint found successfully",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = WaypointResponse.class),
+                examples = @ExampleObject(
+                    name = "Waypoint",
+                    value = """
+                        {
+                          "id": "22222222-2222-2222-2222-222222222222",
+                          "routeId": "11111111-1111-1111-1111-111111111111",
+                          "name": "Punto panoramico",
+                          "description": "Belvedere con vista sulle montagne",
+                          "position": 1,
+                          "latitude": 45.123456,
+                          "longitude": 8.765432,
+                          "createdAt": "2026-07-29T10:00:00Z",
+                          "updatedAt": "2026-07-29T10:00:00Z"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid route or waypoint identifier",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Invalid waypoint identifier",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "Parameter 'waypointId' must be of type UUID",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints/invalid-uuid",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route or waypoint with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Waypoint not found",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 404,
+                          "error": "Not Found",
+                          "message": "Waypoint not found with id: 22222222-2222-2222-2222-222222222222",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints/22222222-2222-2222-2222-222222222222",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @GetMapping("/{waypointId}")
+    public ResponseEntity<WaypointResponse> getWaypoint(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            example = "11111111-1111-1111-1111-111111111111",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID routeId,
+
+        @Parameter(
+            description = "Unique identifier of a waypoint in the motorcycle route",
+            example = "22222222-2222-2222-2222-222222222222",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID waypointId
+    ) {
+
+        WaypointResponse response = waypointService.getWaypoint(routeId, waypointId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "Update a waypoint in a motorcycle route",
+        description = "Updates an existing waypoint in a motorcycle route."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Waypoint updated successfully",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = WaypointResponse.class),
+                examples = @ExampleObject(
+                    name = "Updated waypoint",
+                    value = """
+                        {
+                        "id": "22222222-2222-2222-2222-222222222222",
+                        "routeId": "11111111-1111-1111-1111-111111111111",
+                        "name": "Punto panoramico modificato",
+                        "description": "Belvedere con vista sulle montagne",
+                        "position": 1,
+                        "latitude": 15.123456,
+                        "longitude": 92.765432,
+                        "createdAt": "2026-07-27T10:00:00Z",
+                        "updatedAt": "2026-09-08T15:30:00Z"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request or malformed JSON",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Validation error",
+                    value = """
+                        {
+                          "timestamp": "2026-07-27T10:00:00Z",
+                          "status": 400,
+                          "error": "Bad Request",
+                          "message": "One or more fields are invalid",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints/22222222-2222-2222-2222-222222222222",
+                          "fieldErrors": {
+                            "name": "must not be blank"
+                          }
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route or waypoint with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Route not found",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 404,
+                          "error": "Not Found",
+                          "message": "Route not found with id: 11111111-1111-1111-1111-111111111111",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints/22222222-2222-2222-2222-222222222222",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Waypoint position already occupied in the specified route",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(
+                    name = "Waypoint position already occupied",
+                    value = """
+                        {
+                          "timestamp": "2026-07-29T10:00:00Z",
+                          "status": 409,
+                          "error": "Conflict",
+                          "message": "Waypoint position 1 already exists in route: 11111111-1111-1111-1111-111111111111",
+                          "path": "/api/routes/11111111-1111-1111-1111-111111111111/waypoints/22222222-2222-2222-2222-222222222222",
+                          "fieldErrors": {}
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @PutMapping("/{waypointId}")
+    public ResponseEntity<WaypointResponse> updateWaypoint(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            example = "11111111-1111-1111-1111-111111111111",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID routeId,
+
+        @Parameter(
+            description = "Unique identifier of a waypoint in the motorcycle route",
+            example = "22222222-2222-2222-2222-222222222222",
+            required = true,
+            schema = @Schema(
+                type = "string",
+                format = "uuid"
+            )
+        )
+        @PathVariable UUID waypointId,
+
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Data of the motorcycle waypoint to update",
+            required = true,
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = UpdateWaypointRequest.class),
+                examples = @ExampleObject(
+                    name = "Update waypoint request",
+                    value = """
+                        {
+                          "name": "Punto panoramico modificato",
+                          "description": "Belvedere con vista sulle montagne",
+                          "position": 1,
+                          "latitude": 15.123456,
+                          "longitude": 92.765432
+                        }
+                        """
+                )
+            )
+        )
+        @Valid @RequestBody UpdateWaypointRequest request
+    ) {
+
+        WaypointResponse response = waypointService.updateWaypoint(routeId, waypointId, request);
+
+        return ResponseEntity.ok(response);
+    }
 }

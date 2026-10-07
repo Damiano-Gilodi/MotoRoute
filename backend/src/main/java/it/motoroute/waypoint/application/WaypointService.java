@@ -76,6 +76,19 @@ public class WaypointService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public WaypointResponse getWaypoint(UUID routeId, UUID waypointId) {
+
+        if (!routeRepository.existsById(routeId)) {
+            throw new RouteNotFoundException(routeId);
+        }
+
+        Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
+            .orElseThrow(() -> new WaypointNotFoundException(waypointId));
+
+        return waypointMapper.toResponse(waypoint);
+    }
+
     public WaypointResponse updateWaypoint(
         UUID routeId,
         UUID waypointId,
