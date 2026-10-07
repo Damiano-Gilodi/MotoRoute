@@ -18,7 +18,6 @@ export function WaypointForm({
                              }) {
 
   const [values, setValues] = useState(initialValues);
-
   const [clientErrors, setClientErrors] = useState({});
 
   const errors = {
@@ -64,10 +63,7 @@ export function WaypointForm({
       return;
     }
 
-    const payload =
-      normalizeWaypointValues(values);
-
-    onSubmit(payload);
+    onSubmit(normalizeWaypointValues(values));
   }
 
   return (
@@ -94,7 +90,7 @@ export function WaypointForm({
 
       <div>
         <label htmlFor="description"> Descrizione </label>
-        <input
+        <textarea
           id="description"
           name="description"
           value={values.description}

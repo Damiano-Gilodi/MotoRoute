@@ -1,23 +1,16 @@
 import {useState} from "react";
-
-import {createRoute} from "./createRouteApi";
-
 import {useNavigate} from "react-router";
+
 import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {RouteForm} from "../form/RouteForm.jsx";
+import {createRoute} from "./createRouteApi.js";
 
 export function CreateRoutePage() {
-
   const navigate = useNavigate();
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
-  const [serverErrors, setServerErrors] =
-    useState({});
-
-  const [apiError, setApiError] =
-    useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverErrors, setServerErrors] = useState({});
+  const [apiError, setApiError] = useState("");
 
   async function handleCreateRoute(payload) {
     setIsSubmitting(true);
@@ -25,17 +18,15 @@ export function CreateRoutePage() {
     setApiError("");
 
     try {
-      const route = await createRoute({payload,});
+      const route = await createRoute({payload});
 
       navigate(`/routes/${route.id}`);
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        setServerErrors(error.fieldErrors);
+        setServerErrors(error.fieldErrors ?? {});
         setApiError(error.message);
       } else {
-        setApiError(
-          "Impossibile creare l’itinerario",
-        );
+        setApiError("Impossibile creare l’itinerario");
       }
     } finally {
       setIsSubmitting(false);

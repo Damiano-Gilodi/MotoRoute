@@ -43,6 +43,7 @@ public class WaypointMapper {
         return new WaypointSummaryResponse(
             waypoint.getId(),
             waypoint.getName(),
+            waypoint.getDescription(),
             waypoint.getPosition(),
             waypoint.getLatitude(),
             waypoint.getLongitude(),

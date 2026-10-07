@@ -4,6 +4,7 @@ import it.motoroute.route.application.RouteNotFoundException;
 import it.motoroute.route.domain.Route;
 import it.motoroute.route.infrastructure.RouteRepository;
 import it.motoroute.waypoint.api.CreateWaypointRequest;
+import it.motoroute.waypoint.api.UpdateWaypointRequest;
 import it.motoroute.waypoint.api.WaypointPageResponse;
 import it.motoroute.waypoint.api.WaypointResponse;
 import it.motoroute.waypoint.domain.Waypoint;
@@ -73,5 +74,46 @@ public class WaypointService {
         if (size < 1 || size > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("size must be between 1 and " + MAX_PAGE_SIZE);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public WaypointResponse getWaypoint(UUID routeId, UUID waypointId) {
+
+        if (!routeRepository.existsById(routeId)) {
+            throw new RouteNotFoundException(routeId);
+        }
+
+        Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
+            .orElseThrow(() -> new WaypointNotFoundException(waypointId));
+
+        return waypointMapper.toResponse(waypoint);
+    }
+
+    public WaypointResponse updateWaypoint(
+        UUID routeId,
+        UUID waypointId,
+        UpdateWaypointRequest request
+    ) {
+        if (!routeRepository.existsById(routeId)) {
+            throw new RouteNotFoundException(routeId);
+        }
+
+        Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
+            .orElseThrow(() -> new WaypointNotFoundException(waypointId));
+
+        if (!waypoint.getPosition().equals(request.position())
+            && waypointRepository.existsByRoute_IdAndPosition(routeId, request.position())) {
+            throw new WaypointPositionConflictException(routeId, request.position());
+        }
+
+        waypoint.update(
+            request.name(),
+            request.description(),
+            request.position(),
+            request.latitude(),
+            request.longitude()
+        );
+
+        return waypointMapper.toResponse(waypoint);
     }
 }

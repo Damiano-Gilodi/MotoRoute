@@ -1,17 +1,14 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import {useEffect, useState} from "react";
 import {Link} from "react-router";
 
+import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
+import {RouteCard} from "./RouteCard.jsx";
+import {RoutesPagination} from "./RoutesPagination.jsx";
 import {
   DEFAULT_ROUTE_PAGE_SIZE,
   DEFAULT_ROUTE_SORT,
-  listRoutes,
+  listRoutes
 } from "./listRoutesApi.js";
-import {RouteCard} from "./RouteCard.jsx";
-import {RoutesPagination} from "./RoutesPagination.jsx";
-import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 
 export function RoutesPage() {
   const [page, setPage] = useState(0);
@@ -31,7 +28,7 @@ export function RoutesPage() {
           page,
           size: DEFAULT_ROUTE_PAGE_SIZE,
           sort: DEFAULT_ROUTE_SORT,
-          signal: abortController.signal,
+          signal: abortController.signal
         });
 
         setRoutePage(response);
@@ -45,9 +42,7 @@ export function RoutesPage() {
         if (error instanceof ApiRequestError) {
           setApiError(error.message);
         } else {
-          setApiError(
-            "Impossibile caricare gli itinerari",
-          );
+          setApiError("Impossibile caricare gli itinerari");
         }
       } finally {
         if (!abortController.signal.aborted) {
@@ -56,7 +51,7 @@ export function RoutesPage() {
       }
     }
 
-    loadRoutes();
+    void loadRoutes();
 
     return () => {
       abortController.abort();
@@ -87,35 +82,29 @@ export function RoutesPage() {
         </p>
       )}
 
-      {!isLoading &&
-        !apiError &&
-        routes.length === 0 && (
-          <p>
-            Nessun itinerario disponibile.
-          </p>
-        )}
+      {!isLoading && !apiError && routes.length === 0 && (
+        <p>Nessun itinerario disponibile.</p>
+      )}
 
-      {!isLoading &&
-        !apiError &&
-        routes.length > 0 && (
-          <>
-            <section aria-label="Elenco itinerari">
-              {routes.map((route) => (
-                <RouteCard
-                  key={route.id}
-                  route={route}
-                />
-              ))}
-            </section>
+      {!isLoading && !apiError && routes.length > 0 && (
+        <>
+          <section aria-label="Elenco itinerari">
+            {routes.map((route) => (
+              <RouteCard
+                key={route.id}
+                route={route}
+              />
+            ))}
+          </section>
 
-            <RoutesPagination
-              page={routePage.page}
-              totalPages={routePage.totalPages}
-              isLoading={isLoading}
-              onPageChange={setPage}
-            />
-          </>
-        )}
+          <RoutesPagination
+            page={routePage.page}
+            totalPages={routePage.totalPages}
+            isLoading={isLoading}
+            onPageChange={setPage}
+          />
+        </>
+      )}
     </main>
   );
 }

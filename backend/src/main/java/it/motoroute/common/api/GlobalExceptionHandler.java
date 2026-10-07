@@ -1,6 +1,7 @@
 package it.motoroute.common.api;
 
 import it.motoroute.route.application.RouteNotFoundException;
+import it.motoroute.waypoint.application.WaypointNotFoundException;
 import it.motoroute.waypoint.application.WaypointPositionConflictException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -94,9 +95,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(apiError);
     }
 
-    @ExceptionHandler(RouteNotFoundException.class)
-    public ResponseEntity<ApiError> handleRouteNotFound(
-        RouteNotFoundException exception,
+    @ExceptionHandler({
+        RouteNotFoundException.class,
+        WaypointNotFoundException.class
+    })
+    public ResponseEntity<ApiError> handleNotFound(
+        RuntimeException exception,
         HttpServletRequest request
     ) {
         ApiError apiError = buildError(
@@ -106,9 +110,7 @@ public class GlobalExceptionHandler {
             Map.of()
         );
 
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(apiError);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
     @ExceptionHandler(WaypointPositionConflictException.class)
@@ -123,9 +125,7 @@ public class GlobalExceptionHandler {
             Map.of()
         );
 
-        return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(apiError);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
 
     @ExceptionHandler(Exception.class)
@@ -140,9 +140,7 @@ public class GlobalExceptionHandler {
             Map.of()
         );
 
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(apiError);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
     }
 
     private ApiError buildError(
