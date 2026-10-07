@@ -17,6 +17,7 @@ const apiUrl = new URL(
 const firstWaypoint = {
   id: "22222222-2222-2222-2222-222222222222",
   name: "Punto panoramico",
+  description: "Belvedere con vista sulle montagne",
   position: 1,
   latitude: 45.123456,
   longitude: 8.765432,
@@ -78,6 +79,7 @@ describe("WaypointsPage", () => {
 
     expect(screen.getByText("Posizione")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("Belvedere con vista sulle montagne")).toBeInTheDocument();
     expect(screen.getByText("45.123456")).toBeInTheDocument();
     expect(screen.getByText("8.765432")).toBeInTheDocument();
 

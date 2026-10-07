@@ -8,6 +8,10 @@ export function WaypointCard({waypoint}) {
     <article aria-labelledby={titleId}>
       <h2 id={titleId}>{waypoint.name}</h2>
 
+      {waypoint.description && (
+        <p>{waypoint.description}</p>
+      )}
+
       <dl>
         <div>
           <dt>Posizione</dt>
