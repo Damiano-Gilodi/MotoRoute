@@ -4,12 +4,13 @@ import {
   Routes,
 } from "react-router";
 
-import {CreateRoutePage} from "./features/routes/create/CreateRoutePage";
-import {RoutesPage} from "./features/routes/list/RoutesPage";
+import {CreateRoutePage} from "./features/routes/create/CreateRoutePage.jsx";
+import {RoutesPage} from "./features/routes/list/RoutesPage.jsx";
 import {RouteDetailsPage} from "./features/routes/details/RouteDetailsPage.jsx";
 import {RouteEditPage} from "./features/routes/edit/RouteEditPage.jsx";
 import {CreateWaypointPage} from "./features/waypoints/create/CreateWaypointPage.jsx";
 import {WaypointsPage} from "./features/waypoints/list/WaypointsPage.jsx";
+import {WaypointEditPage} from "./features/waypoints/edit/WaypointEditPage.jsx";
 
 export default function App() {
   return (
@@ -52,6 +53,11 @@ export default function App() {
       <Route
         path="/routes/:routeId/waypoints/new"
         element={<CreateWaypointPage/>}
+      />
+
+      <Route
+        path="/routes/:routeId/waypoints/:waypointId/edit"
+        element={<WaypointEditPage/>}
       />
     </Routes>
   );

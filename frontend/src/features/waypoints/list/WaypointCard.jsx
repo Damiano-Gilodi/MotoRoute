@@ -1,6 +1,7 @@
 import {formatRouteDate} from "../../routes/utils/routeFormatters.js";
+import {Link} from "react-router";
 
-export function WaypointCard({waypoint}) {
+export function WaypointCard({waypoint, routeId}) {
 
   const titleId = `waypoint-title-${waypoint.id}`;
 
@@ -37,6 +38,10 @@ export function WaypointCard({waypoint}) {
           </dd>
         </div>
       </dl>
+
+      <Link to={`/routes/${routeId}/waypoints/${waypoint.id}/edit`}>
+        Modifica waypoint
+      </Link>
     </article>
   )
 }

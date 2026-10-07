@@ -87,6 +87,7 @@ describe("WaypointsPage", () => {
 
     expect(screen.getByRole("link", {name: "Torna all'itinerario"})).toHaveAttribute("href", `/routes/${routeId}`);
     expect(screen.getByRole("link", {name: "Aggiungi waypoint"})).toHaveAttribute("href", `/routes/${routeId}/waypoints/new`);
+    expect(screen.getByRole("link", {name: "Modifica waypoint"})).toHaveAttribute("href", `/routes/${routeId}/waypoints/${firstWaypoint.id}/edit`);
   });
 
   test("should display the empty state", async () => {

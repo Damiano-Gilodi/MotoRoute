@@ -99,6 +99,7 @@ export function WaypointsPage() {
               <WaypointCard
                 key={waypoint.id}
                 waypoint={waypoint}
+                routeId={routeId}
               />
             ))}
           </section>

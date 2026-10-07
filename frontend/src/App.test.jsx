@@ -39,9 +39,7 @@ beforeEach(() => {
 });
 
 describe("App routing", () => {
-  test(
-    "should render the route list at /routes",
-    async () => {
+  test("should render the route list at /routes", async () => {
       render(
         <MemoryRouter
           initialEntries={["/routes"]}
@@ -61,9 +59,7 @@ describe("App routing", () => {
     },
   );
 
-  test(
-    "should render the create route page at /routes/new",
-    () => {
+  test("should render the create route page at /routes/new", () => {
       render(
         <MemoryRouter
           initialEntries={["/routes/new"]}
@@ -80,9 +76,7 @@ describe("App routing", () => {
     },
   );
 
-  test(
-    "should redirect the root path to the route list",
-    async () => {
+  test("should redirect the root path to the route list", async () => {
       render(
         <MemoryRouter
           initialEntries={["/"]}
@@ -102,9 +96,7 @@ describe("App routing", () => {
     },
   );
 
-  test(
-    "should render the edit route page at /routes/:routeId/edit",
-    async () => {
+  test("should render the edit route page at /routes/:routeId/edit", async () => {
       const routeId =
         "11111111-1111-1111-1111-111111111111";
 
@@ -146,4 +138,44 @@ describe("App routing", () => {
       ).toBeInTheDocument();
     },
   );
+
+  test("should render the edit waypoint page at /routes/:routeId/waypoints/:waypointId/edit", async () => {
+    const routeId = "11111111-1111-1111-1111-111111111111";
+    const waypointId = "22222222-2222-2222-2222-222222222222";
+
+    const apiUrl = new URL(
+      `/api/routes/${routeId}/waypoints/${waypointId}`,
+      window.location.origin
+    ).toString();
+
+    server.use(
+      http.get(apiUrl, () =>
+        HttpResponse.json({
+          id: waypointId,
+          routeId,
+          name: "Punto panoramico",
+          description: "Vista sulle montagne",
+          position: 1,
+          latitude: 45.123456,
+          longitude: 9.123456,
+          createdAt: "2026-07-29T10:00:00Z",
+          updatedAt: "2026-07-29T10:00:00Z"
+        })
+      )
+    );
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          `/routes/${routeId}/waypoints/${waypointId}/edit`
+        ]}
+      >
+        <App/>
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", {name: "Modifica waypoint"})
+    ).toBeInTheDocument();
+  });
 });
