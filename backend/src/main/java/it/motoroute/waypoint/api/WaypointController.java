@@ -52,4 +52,13 @@ public class WaypointController implements WaypointApi {
     ) {
         return ResponseEntity.ok(waypointService.updateWaypoint(routeId, waypointId, request));
     }
+
+    @Override
+    public ResponseEntity<Void> deleteWaypoint(
+        UUID routeId,
+        UUID waypointId
+    ) {
+        waypointService.deleteWaypoint(routeId, waypointId);
+        return ResponseEntity.noContent().build();
+    }
 }

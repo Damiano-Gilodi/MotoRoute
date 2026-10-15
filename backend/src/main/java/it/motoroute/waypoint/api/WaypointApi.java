@@ -290,4 +290,57 @@ public interface WaypointApi {
         )
         @Valid @RequestBody UpdateWaypointRequest request
     );
+
+
+    @Operation(
+        summary = "Delete a waypoint",
+        description = "Deletes an existing waypoint belonging to the specified motorcycle route"
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "204",
+            description = "Waypoint deleted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid route or waypoint identifier",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Route or waypoint with the specified ID does not exist",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class),
+                examples = @ExampleObject(value = WaypointApiExamples.WAYPOINT_NOT_FOUND)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected internal server error",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
+    })
+    @DeleteMapping("/{waypointId}")
+    ResponseEntity<Void> deleteWaypoint(
+        @Parameter(
+            description = "Unique identifier of the motorcycle route",
+            required = true,
+            schema = @Schema(type = "string", format = "uuid")
+        )
+        @PathVariable UUID routeId,
+
+        @Parameter(
+            description = "Unique identifier of the waypoint",
+            required = true,
+            schema = @Schema(type = "string", format = "uuid")
+        )
+        @PathVariable UUID waypointId
+    );
 }
