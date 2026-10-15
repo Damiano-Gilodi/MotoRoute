@@ -193,4 +193,26 @@ class OpenApiIT {
             .andExpect(jsonPath(endpoint + ".responses['200'].content['application/json'].schema['$ref']").value("#/components/schemas/WaypointResponse"))
             .andExpect(jsonPath("$.components.schemas.UpdateWaypointRequest").exists());
     }
+
+    @Test
+    void shouldExposeDeleteWaypointOpenApiDocumentation() throws Exception {
+        String endpoint = "$.paths['/api/routes/{routeId}/waypoints/{waypointId}'].delete";
+
+        getOpenApi()
+            .andExpect(jsonPath(endpoint).exists())
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'routeId')].in").value(hasItem("path")))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'routeId')].required").value(hasItem(true)))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'routeId')].schema.type").value(hasItem("string")))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'routeId')].schema.format").value(hasItem("uuid")))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'waypointId')].in").value(hasItem("path")))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'waypointId')].required").value(hasItem(true)))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'waypointId')].schema.type").value(hasItem("string")))
+            .andExpect(jsonPath(endpoint + ".parameters[?(@.name == 'waypointId')].schema.format").value(hasItem("uuid")))
+            .andExpect(jsonPath(endpoint + ".requestBody").doesNotExist())
+            .andExpect(jsonPath(endpoint + ".responses['204']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['204'].content").doesNotExist())
+            .andExpect(jsonPath(endpoint + ".responses['400']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['404']").exists())
+            .andExpect(jsonPath(endpoint + ".responses['500']").exists());
+    }
 }
