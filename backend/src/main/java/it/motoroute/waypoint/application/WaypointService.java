@@ -39,9 +39,9 @@ public class WaypointService {
         Route route = routeRepository.findById(routeId)
             .orElseThrow(() -> new RouteNotFoundException(routeId));
 
-        if (waypointRepository.existsByRoute_IdAndPosition(routeId, request.position())) {
+        if (waypointRepository.existsByRoute_IdAndPosition(routeId, request.position()))
             throw new WaypointPositionConflictException(routeId, request.position());
-        }
+
 
         Waypoint waypoint = waypointMapper.toEntity(route, request);
 
@@ -57,9 +57,9 @@ public class WaypointService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("position"));
 
-        if (!routeRepository.existsById(routeId)) {
+        if (!routeRepository.existsById(routeId))
             throw new RouteNotFoundException(routeId);
-        }
+
 
         Page<Waypoint> waypointPage = waypointRepository.findAllByRoute_Id(routeId, pageable);
 
@@ -67,21 +67,20 @@ public class WaypointService {
     }
 
     private void validatePagination(int page, int size) {
-        if (page < 0) {
+        if (page < 0)
             throw new IllegalArgumentException("page must be greater than or equal to zero");
-        }
 
-        if (size < 1 || size > MAX_PAGE_SIZE) {
+
+        if (size < 1 || size > MAX_PAGE_SIZE)
             throw new IllegalArgumentException("size must be between 1 and " + MAX_PAGE_SIZE);
-        }
     }
 
     @Transactional(readOnly = true)
     public WaypointResponse getWaypoint(UUID routeId, UUID waypointId) {
 
-        if (!routeRepository.existsById(routeId)) {
+        if (!routeRepository.existsById(routeId))
             throw new RouteNotFoundException(routeId);
-        }
+
 
         Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
             .orElseThrow(() -> new WaypointNotFoundException(waypointId));
@@ -94,9 +93,8 @@ public class WaypointService {
         UUID waypointId,
         UpdateWaypointRequest request
     ) {
-        if (!routeRepository.existsById(routeId)) {
+        if (!routeRepository.existsById(routeId))
             throw new RouteNotFoundException(routeId);
-        }
 
         Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
             .orElseThrow(() -> new WaypointNotFoundException(waypointId));
@@ -115,5 +113,16 @@ public class WaypointService {
         );
 
         return waypointMapper.toResponse(waypoint);
+    }
+
+    public void deleteWaypoint(UUID routeId, UUID waypointId) {
+
+        if (!routeRepository.existsById(routeId))
+            throw new RouteNotFoundException(routeId);
+
+        Waypoint waypoint = waypointRepository.findByIdAndRoute_Id(waypointId, routeId)
+            .orElseThrow(() -> new WaypointNotFoundException(waypointId));
+
+        waypointRepository.delete(waypoint);
     }
 }
