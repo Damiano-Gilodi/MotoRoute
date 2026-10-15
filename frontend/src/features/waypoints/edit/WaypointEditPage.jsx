@@ -90,8 +90,8 @@ export function WaypointEditPage() {
 
   if (isLoading) {
     return (
-      <main>
-        <p role="status">
+      <main className="form-page">
+        <p className="status-message" role="status">
           Caricamento waypoint...
         </p>
       </main>
@@ -100,11 +100,13 @@ export function WaypointEditPage() {
 
   if (!waypoint) {
     return (
-      <main>
-        <h1>Modifica waypoint</h1>
+      <main className="form-page">
+        <h1 className="form-page__title">
+          Modifica waypoint
+        </h1>
 
         {apiError && (
-          <p role="alert">
+          <p className="error-message" role="alert">
             {apiError}
           </p>
         )}
@@ -121,11 +123,13 @@ export function WaypointEditPage() {
   };
 
   return (
-    <main>
-      <h1>Modifica waypoint</h1>
+    <main className="form-page">
+      <h1 className="form-page__title">
+        Modifica waypoint
+      </h1>
 
       {apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}

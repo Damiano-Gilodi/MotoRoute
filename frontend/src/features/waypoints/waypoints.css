@@ -1,0 +1,47 @@
+.waypoint-card__main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.waypoint-card__position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #b8bec7;
+  border-radius: 50%;
+  background: #f5f6f8;
+  font-weight: 700;
+}
+
+.waypoint-card__position::before {
+  content: attr(data-position);
+}
+
+.waypoint-card__details {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.waypoint-card__actions {
+  min-width: 180px;
+}
+
+@media (max-width: 700px) {
+  .waypoint-card__actions {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .waypoint-card__main {
+    grid-template-columns: 1fr;
+  }
+
+  .waypoint-card__position {
+    width: 34px;
+    height: 34px;
+  }
+}

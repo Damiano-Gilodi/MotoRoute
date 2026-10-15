@@ -21,7 +21,7 @@ export function RouteForm({
                             serverErrors = {},
                             submitLabel = "Salva itinerario",
                           }) {
-  
+
   const [values, setValues] = useState(initialValues);
   const [clientErrors, setClientErrors] = useState({});
 
@@ -72,8 +72,12 @@ export function RouteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div>
+    <form
+      className="app-form"
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <div className="form-field form-field--full">
         <label htmlFor="name">Nome</label>
         <input
           id="name"
@@ -87,13 +91,17 @@ export function RouteForm({
         />
 
         {errors.name && (
-          <p id="name-error" role="alert">
+          <p
+            className="form-field__error"
+            id="name-error"
+            role="alert"
+          >
             {errors.name}
           </p>
         )}
       </div>
 
-      <div>
+      <div className="form-field form-field--full">
         <label htmlFor="description">Descrizione</label>
         <textarea
           id="description"
@@ -106,13 +114,17 @@ export function RouteForm({
         />
 
         {errors.description && (
-          <p id="description-error" role="alert">
+          <p
+            className="form-field__error"
+            id="description-error"
+            role="alert"
+          >
             {errors.description}
           </p>
         )}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="startLocation">Partenza</label>
         <input
           id="startLocation"
@@ -126,13 +138,17 @@ export function RouteForm({
         />
 
         {errors.startLocation && (
-          <p id="startLocation-error" role="alert">
+          <p
+            className="form-field__error"
+            id="startLocation-error"
+            role="alert"
+          >
             {errors.startLocation}
           </p>
         )}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="endLocation">Arrivo</label>
         <input
           id="endLocation"
@@ -146,13 +162,17 @@ export function RouteForm({
         />
 
         {errors.endLocation && (
-          <p id="endLocation-error" role="alert">
+          <p
+            className="form-field__error"
+            id="endLocation-error"
+            role="alert"
+          >
             {errors.endLocation}
           </p>
         )}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="distanceKm">Distanza (km)</label>
         <input
           id="distanceKm"
@@ -168,13 +188,17 @@ export function RouteForm({
         />
 
         {errors.distanceKm && (
-          <p id="distanceKm-error" role="alert">
+          <p
+            className="form-field__error"
+            id="distanceKm-error"
+            role="alert"
+          >
             {errors.distanceKm}
           </p>
         )}
       </div>
 
-      <div>
+      <div className="form-field">
         <label htmlFor="difficulty">Difficoltà</label>
         <select
           id="difficulty"
@@ -192,15 +216,25 @@ export function RouteForm({
         </select>
 
         {errors.difficulty && (
-          <p id="difficulty-error" role="alert">
+          <p
+            className="form-field__error"
+            id="difficulty-error"
+            role="alert"
+          >
             {errors.difficulty}
           </p>
         )}
       </div>
 
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Salvataggio in corso..." : submitLabel}
-      </button>
+      <div className="form-actions">
+        <button
+          className="action-button form-submit"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Salvataggio in corso..." : submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

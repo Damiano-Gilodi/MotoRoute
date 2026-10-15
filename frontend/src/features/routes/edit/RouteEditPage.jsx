@@ -95,8 +95,8 @@ export function RouteEditPage() {
 
   if (isLoading) {
     return (
-      <main>
-        <p role="status">
+      <main className="form-page">
+        <p className="status-message" role="status">
           Caricamento itinerario...
         </p>
       </main>
@@ -105,11 +105,13 @@ export function RouteEditPage() {
 
   if (!route) {
     return (
-      <main>
-        <h1>Modifica itinerario</h1>
+      <main className="form-page">
+        <h1 className="form-page__title">
+          Modifica itinerario
+        </h1>
 
         {apiError && (
-          <p role="alert">
+          <p className="error-message" role="alert">
             {apiError}
           </p>
         )}
@@ -127,11 +129,13 @@ export function RouteEditPage() {
   };
 
   return (
-    <main>
-      <h1>Modifica itinerario</h1>
+    <main className="form-page">
+      <h1 className="form-page__title">
+        Modifica itinerario
+      </h1>
 
       {apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}

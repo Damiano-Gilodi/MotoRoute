@@ -2,7 +2,7 @@ export function RoutesPagination({
                                    page,
                                    totalPages,
                                    isLoading = false,
-                                   onPageChange,
+                                   onPageChange
                                  }) {
   if (totalPages <= 1) {
     return null;
@@ -12,8 +12,12 @@ export function RoutesPagination({
   const isLastPage = page >= totalPages - 1;
 
   return (
-    <nav aria-label="Paginazione itinerari">
+    <nav
+      className="pagination"
+      aria-label="Paginazione itinerari"
+    >
       <button
+        className="action-button"
         type="button"
         disabled={isLoading || isFirstPage}
         onClick={() => onPageChange(page - 1)}
@@ -26,6 +30,7 @@ export function RoutesPagination({
       </span>
 
       <button
+        className="action-button"
         type="button"
         disabled={isLoading || isLastPage}
         onClick={() => onPageChange(page + 1)}

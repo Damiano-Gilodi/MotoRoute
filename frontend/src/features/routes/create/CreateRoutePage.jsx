@@ -34,11 +34,13 @@ export function CreateRoutePage() {
   }
 
   return (
-    <main>
-      <h1>Crea itinerario</h1>
+    <main className="form-page">
+      <h1 className="form-page__title">
+        Crea itinerario
+      </h1>
 
       {apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}

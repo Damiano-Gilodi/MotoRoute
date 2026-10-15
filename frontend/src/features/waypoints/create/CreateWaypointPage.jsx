@@ -35,11 +35,13 @@ export function CreateWaypointPage() {
   }
 
   return (
-    <main>
-      <h1>Crea waypoint</h1>
+    <main className="form-page">
+      <h1 className="form-page__title">
+        Crea waypoint
+      </h1>
 
       {apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}

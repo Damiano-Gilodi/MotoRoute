@@ -1,5 +1,6 @@
 import {formatRouteDifficulty} from "../utils/routeFormatters.js";
 import {formatDate} from "../../../shared/utils/dateFormatters.js";
+import "../routes.css";
 
 export function RouteDetails({route}) {
   const {
@@ -10,18 +11,22 @@ export function RouteDetails({route}) {
     distanceKm,
     difficulty,
     createdAt,
-    updatedAt,
+    updatedAt
   } = route;
 
   return (
-    <article>
-      <h1>{name}</h1>
+    <article className="route-details">
+      <h1 className="route-details__title">
+        {name}
+      </h1>
 
       {description && (
-        <p>{description}</p>
+        <p className="route-details__description">
+          {description}
+        </p>
       )}
 
-      <dl>
+      <dl className="route-details__data">
         <div>
           <dt>Partenza</dt>
           <dd>{startLocation}</dd>
@@ -39,10 +44,7 @@ export function RouteDetails({route}) {
 
         <div>
           <dt>Difficoltà</dt>
-          <dd>
-            {formatRouteDifficulty(
-              difficulty,
-            )}</dd>
+          <dd>{formatRouteDifficulty(difficulty)}</dd>
         </div>
 
         <div>

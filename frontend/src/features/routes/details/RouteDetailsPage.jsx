@@ -13,6 +13,8 @@ import {getRoute} from "./getRouteApi.js";
 import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
 import {deleteRoute} from "../delete/deleteRouteApi.js";
 
+import "../routes.css";
+
 export function RouteDetailsPage() {
 
   const {routeId} = useParams();
@@ -106,15 +108,15 @@ export function RouteDetailsPage() {
   }
 
   return (
-    <main>
+    <main className="page-container">
       {isLoading && (
-        <p role="status">
+        <p className="status-message" role="status">
           Caricamento itinerario...
         </p>
       )}
 
       {!isLoading && isNotFound && (
-        <section>
+        <section className="status-message">
           <h1>Itinerario non trovato</h1>
 
           <p>
@@ -124,7 +126,7 @@ export function RouteDetailsPage() {
       )}
 
       {!isLoading && apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}
@@ -136,31 +138,53 @@ export function RouteDetailsPage() {
           <>
             <RouteDetails route={route}/>
 
-            <Link to={`/routes/${route.id}/edit`}>
-              Modifica itinerario
-            </Link>
+            <div className="route-details-page__actions">
+              <Link
+                className="action-link"
+                to={`/routes/${route.id}/edit`}
+              >
+                Modifica itinerario
+              </Link>
 
-            <Link to={`/routes/${route.id}/waypoints/new`}>
-              Aggiungi waypoint
-            </Link>
+              <Link
+                className="action-link"
+                to={`/routes/${route.id}/waypoints/new`}
+              >
+                Aggiungi waypoint
+              </Link>
 
-            <Link to={`/routes/${route.id}/waypoints`}>
-              Visualizza waypoint
-            </Link>
+              <Link
+                className="action-link"
+                to={`/routes/${route.id}/waypoints`}
+              >
+                Visualizza waypoint
+              </Link>
 
-            <button type="button" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Eliminazione in corso..." : "Elimina itinerario"}
-            </button>
+              <button
+                className="action-button action-button--danger"
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting
+                  ? "Eliminazione in corso..."
+                  : "Elimina itinerario"}
+              </button>
+            </div>
 
             {deleteError && (
-              <p role="alert">
+              <p className="error-message" role="alert">
                 {deleteError}
               </p>
             )}
           </>
         )}
 
-      <Link to="/routes"> Torna agli itinerari </Link>
+      <div className="route-details-page__back">
+        <Link className="action-link" to="/routes">
+          Torna agli itinerari
+        </Link>
+      </div>
     </main>
   );
 }

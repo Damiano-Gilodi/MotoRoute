@@ -67,9 +67,13 @@ export function WaypointForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div>
-        <label htmlFor="name"> Nome </label>
+    <form
+      className="app-form"
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <div className="form-field form-field--full">
+        <label htmlFor="name">Nome</label>
         <input
           id="name"
           name="name"
@@ -82,14 +86,18 @@ export function WaypointForm({
         />
 
         {errors.name && (
-          <p id="name-error" role="alert">
+          <p
+            className="form-field__error"
+            id="name-error"
+            role="alert"
+          >
             {errors.name}
           </p>
         )}
       </div>
 
-      <div>
-        <label htmlFor="description"> Descrizione </label>
+      <div className="form-field form-field--full">
+        <label htmlFor="description">Descrizione</label>
         <textarea
           id="description"
           name="description"
@@ -101,14 +109,18 @@ export function WaypointForm({
         />
 
         {errors.description && (
-          <p id="description-error" role="alert">
+          <p
+            className="form-field__error"
+            id="description-error"
+            role="alert"
+          >
             {errors.description}
           </p>
         )}
       </div>
 
-      <div>
-        <label htmlFor="position"> Posizione </label>
+      <div className="form-field form-field--full">
+        <label htmlFor="position">Posizione</label>
         <input
           id="position"
           name="position"
@@ -123,14 +135,18 @@ export function WaypointForm({
         />
 
         {errors.position && (
-          <p id="position-error" role="alert">
+          <p
+            className="form-field__error"
+            id="position-error"
+            role="alert"
+          >
             {errors.position}
           </p>
         )}
       </div>
 
-      <div>
-        <label htmlFor="latitude"> Latitudine </label>
+      <div className="form-field">
+        <label htmlFor="latitude">Latitudine</label>
         <input
           id="latitude"
           name="latitude"
@@ -146,14 +162,18 @@ export function WaypointForm({
         />
 
         {errors.latitude && (
-          <p id="latitude-error" role="alert">
+          <p
+            className="form-field__error"
+            id="latitude-error"
+            role="alert"
+          >
             {errors.latitude}
           </p>
         )}
       </div>
 
-      <div>
-        <label htmlFor="longitude"> Longitudine </label>
+      <div className="form-field">
+        <label htmlFor="longitude">Longitudine</label>
         <input
           id="longitude"
           name="longitude"
@@ -169,15 +189,25 @@ export function WaypointForm({
         />
 
         {errors.longitude && (
-          <p id="longitude-error" role="alert">
+          <p
+            className="form-field__error"
+            id="longitude-error"
+            role="alert"
+          >
             {errors.longitude}
           </p>
         )}
       </div>
 
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Salvataggio in corso..." : submitLabel}
-      </button>
+      <div className="form-actions">
+        <button
+          className="action-button form-submit"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Salvataggio in corso..." : submitLabel}
+        </button>
+      </div>
     </form>
-  )
+  );
 }
