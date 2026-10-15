@@ -2,7 +2,7 @@ import {render, screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {MemoryRouter, Route, Routes} from "react-router";
 import {delay, http, HttpResponse} from "msw";
-import {describe, expect, test} from "vitest";
+import {afterEach, describe, expect, test, vi} from "vitest";
 
 import {server} from "../../../test/server.js";
 import {WaypointsPage} from "./WaypointsPage.jsx";
@@ -23,6 +23,13 @@ const firstWaypoint = {
   longitude: 8.765432,
   createdAt: "2026-07-29T10:00:00Z"
 };
+
+function deleteApiUrl(waypointId) {
+  return new URL(
+    `/api/routes/${routeId}/waypoints/${waypointId}`,
+    window.location.origin
+  ).toString();
+}
 
 function createPage({
                       content = [],
@@ -45,7 +52,7 @@ function createPage({
 }
 
 function renderWaypointsPage() {
-  return render(
+  render(
     <MemoryRouter initialEntries={[`/routes/${routeId}/waypoints`]}>
       <Routes>
         <Route
@@ -57,8 +64,11 @@ function renderWaypointsPage() {
   );
 }
 
-describe("WaypointsPage", () => {
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
+describe("WaypointsPage", () => {
   test("should show loading and then display waypoints", async () => {
     server.use(
       http.get(apiUrl, async () => {
@@ -75,6 +85,7 @@ describe("WaypointsPage", () => {
     renderWaypointsPage();
 
     expect(screen.getByRole("status")).toHaveTextContent("Caricamento waypoint...");
+
     expect(await screen.findByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
 
     expect(screen.getByText("Posizione")).toBeInTheDocument();
@@ -84,10 +95,11 @@ describe("WaypointsPage", () => {
     expect(screen.getByText("8.765432")).toBeInTheDocument();
 
     expect(screen.queryByText("Caricamento waypoint...")).not.toBeInTheDocument();
-
     expect(screen.getByRole("link", {name: "Torna all'itinerario"})).toHaveAttribute("href", `/routes/${routeId}`);
     expect(screen.getByRole("link", {name: "Aggiungi waypoint"})).toHaveAttribute("href", `/routes/${routeId}/waypoints/new`);
     expect(screen.getByRole("link", {name: "Modifica waypoint"})).toHaveAttribute("href", `/routes/${routeId}/waypoints/${firstWaypoint.id}/edit`);
+    expect(screen.getByRole("button", {name: "Elimina waypoint"})).toBeEnabled();
+
   });
 
   test("should display the empty state", async () => {
@@ -100,7 +112,9 @@ describe("WaypointsPage", () => {
     renderWaypointsPage();
 
     expect(await screen.findByText("Nessun waypoint disponibile.")).toBeInTheDocument();
+
     expect(screen.queryByRole("article")).not.toBeInTheDocument();
+
     expect(screen.queryByRole("navigation", {name: "Paginazione waypoints"})).not.toBeInTheDocument();
   });
 
@@ -128,8 +142,7 @@ describe("WaypointsPage", () => {
     ).toHaveTextContent("Errore durante il caricamento dei waypoint");
 
     expect(screen.queryByRole("article")).not.toBeInTheDocument();
-    expect(screen.queryByText("Nessun waypoint disponibile."))
-      .not.toBeInTheDocument();
+    expect(screen.queryByText("Nessun waypoint disponibile.")).not.toBeInTheDocument();
   });
 
   test("should display an error when the route does not exist", async () => {
@@ -227,4 +240,193 @@ describe("WaypointsPage", () => {
     expect(requestedPages).toEqual([0, 1]);
   });
 
+  test("should delete a waypoint and reload the list", async () => {
+    let deleted = false;
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    server.use(
+      http.get(apiUrl, () =>
+        HttpResponse.json(
+          createPage({
+            content: deleted ? [] : [firstWaypoint]
+          })
+        )
+      ),
+
+      http.delete(deleteApiUrl(firstWaypoint.id), async () => {
+        await delay(100);
+        deleted = true;
+
+        return new HttpResponse(null, {status: 204});
+      })
+    );
+
+    const user = userEvent.setup();
+
+    renderWaypointsPage();
+
+    expect(
+      await screen.findByRole("heading", {name: "Punto panoramico"})
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {name: "Elimina waypoint"})
+    );
+
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", {name: "Eliminazione in corso..."})).toBeDisabled();
+    expect(await screen.findByText("Nessun waypoint disponibile.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", {name: "Punto panoramico"})).not.toBeInTheDocument();
+  });
+
+  test("should not delete a waypoint when confirmation is cancelled", async () => {
+    let deleteRequests = 0;
+
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    server.use(
+      http.get(apiUrl, () =>
+        HttpResponse.json(
+          createPage({
+            content: [firstWaypoint]
+          })
+        )
+      ),
+
+      http.delete(deleteApiUrl(firstWaypoint.id), () => {
+        deleteRequests += 1;
+        return new HttpResponse(null, {status: 204});
+      })
+    );
+
+    const user = userEvent.setup();
+
+    renderWaypointsPage();
+
+    expect(await screen.findByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", {name: "Elimina waypoint"}));
+
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(deleteRequests).toBe(0);
+    expect(screen.getByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
+  });
+
+  test("should keep the waypoint visible when deletion fails", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    server.use(
+      http.get(apiUrl, () =>
+        HttpResponse.json(
+          createPage({
+            content: [firstWaypoint]
+          })
+        )
+      ),
+
+      http.delete(deleteApiUrl(firstWaypoint.id), () =>
+        HttpResponse.json(
+          {
+            timestamp: "2026-07-29T10:00:00Z",
+            status: 500,
+            error: "Internal Server Error",
+            message: "Impossibile eliminare il waypoint",
+            path: `/api/routes/${routeId}/waypoints/${firstWaypoint.id}`,
+            fieldErrors: {}
+          },
+          {status: 500}
+        )
+      )
+    );
+
+    const user = userEvent.setup();
+
+    renderWaypointsPage();
+
+    expect(await screen.findByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", {name: "Elimina waypoint"}));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Impossibile eliminare il waypoint");
+    expect(screen.getByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
+    expect(screen.getByRole("button", {name: "Elimina waypoint"})).toBeEnabled();
+  });
+
+  test("should return to the previous page when deleting the only waypoint on the current page", async () => {
+    let deleted = false;
+    const requestedPages = [];
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const secondWaypoint = {
+      ...firstWaypoint,
+      id: "33333333-3333-3333-3333-333333333333",
+      name: "Passo Pordoi",
+      position: 21
+    };
+
+    const firstPageContent = [
+      firstWaypoint,
+      ...Array.from({length: 19}, (_, index) => ({
+        ...firstWaypoint,
+        id: `44444444-4444-4444-4444-${String(index + 2).padStart(12, "0")}`,
+        name: `Waypoint ${index + 2}`,
+        position: index + 2
+      }))
+    ];
+
+    server.use(
+      http.get(apiUrl, ({request}) => {
+        const requestUrl = new URL(request.url);
+        const requestedPage = Number(requestUrl.searchParams.get("page"));
+
+        requestedPages.push(requestedPage);
+
+        if (requestedPage === 1) {
+          return HttpResponse.json(
+            createPage({
+              content: deleted ? [] : [secondWaypoint],
+              page: 1,
+              totalElements: deleted ? 20 : 21,
+              totalPages: deleted ? 1 : 2,
+              first: false,
+              last: true
+            })
+          );
+        }
+
+        return HttpResponse.json(
+          createPage({
+            content: firstPageContent,
+            page: 0,
+            totalElements: deleted ? 20 : 21,
+            totalPages: deleted ? 1 : 2,
+            first: true,
+            last: deleted
+          })
+        );
+      }),
+
+      http.delete(deleteApiUrl(secondWaypoint.id), () => {
+        deleted = true;
+        return new HttpResponse(null, {status: 204});
+      })
+    );
+
+    const user = userEvent.setup();
+
+    renderWaypointsPage();
+
+    await screen.findByRole("heading", {name: "Punto panoramico"});
+    await user.click(screen.getByRole("button", {name: "Pagina successiva"}));
+
+    expect(await screen.findByRole("heading", {name: "Passo Pordoi"})).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", {name: "Elimina waypoint"}));
+
+    expect(await screen.findByRole("heading", {name: "Punto panoramico"})).toBeInTheDocument();
+    expect(screen.queryByRole("heading", {name: "Passo Pordoi"})).not.toBeInTheDocument();
+    expect(requestedPages).toEqual([0, 1, 0]);
+  });
 });

@@ -97,7 +97,7 @@ export function RouteDetailsPage() {
         setDeleteError(error.message);
       } else {
         setDeleteError(
-          "Impossibile cancellare l’itinerario",
+          "Impossibile eliminare l’itinerario",
         );
       }
     } finally {

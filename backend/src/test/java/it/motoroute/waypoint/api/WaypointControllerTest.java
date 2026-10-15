@@ -526,4 +526,41 @@ public class WaypointControllerTest {
 
         verifyNoInteractions(mockWaypointService);
     }
+
+    @Test
+    void shouldReturn204WhenDeletingWaypoint() throws Exception {
+
+        mockMvc.perform(delete("/api/routes/{routeId}/waypoints/{waypointId}", ROUTE_ID, WAYPOINT_ID))
+            .andExpect(status().isNoContent())
+            .andExpect(content().string(""));
+
+        verify(mockWaypointService).deleteWaypoint(ROUTE_ID, WAYPOINT_ID);
+    }
+
+    @Test
+    void shouldReturn400WhenDeletingWaypointWithInvalidId() throws Exception {
+
+        mockMvc.perform(delete("/api/routes/{routeId}/waypoints/{waypointId}", ROUTE_ID, "invalid-uuid"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("Parameter 'waypointId' must be of type UUID"))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
+
+        verifyNoInteractions(mockWaypointService);
+    }
+
+    @Test
+    void shouldReturn404WhenDeletingMissingWaypoint() throws Exception {
+
+        doThrow(new WaypointNotFoundException(WAYPOINT_ID)).when(mockWaypointService).deleteWaypoint(ROUTE_ID, WAYPOINT_ID);
+
+        mockMvc.perform(delete("/api/routes/{routeId}/waypoints/{waypointId}", ROUTE_ID, WAYPOINT_ID))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.error").value("Not Found"))
+            .andExpect(jsonPath("$.message").value("Waypoint not found with id: " + WAYPOINT_ID))
+            .andExpect(jsonPath("$.fieldErrors").isEmpty());
+
+        verify(mockWaypointService).deleteWaypoint(ROUTE_ID, WAYPOINT_ID);
+    }
 }

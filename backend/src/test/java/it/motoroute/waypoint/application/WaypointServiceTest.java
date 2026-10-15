@@ -472,4 +472,61 @@ public class WaypointServiceTest {
         verify(mockRouteRepository).existsById(routeId);
         verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
     }
+
+    @Test
+    void shouldDeleteWaypoint() {
+
+        Waypoint waypoint = Waypoint.create(
+            route,
+            "Punto panoramico",
+            "Belvedere con vista sulle montagne",
+            1,
+            new BigDecimal("45.123456"),
+            new BigDecimal("8.765432")
+        );
+
+        UUID waypointId = waypoint.getId();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId))
+            .thenReturn(Optional.of(waypoint));
+
+        waypointService.deleteWaypoint(routeId, waypointId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+        verify(mockWaypointRepository).delete(waypoint);
+        verifyNoMoreInteractions(mockRouteRepository);
+    }
+
+    @Test
+    void shouldRejectDeleteWaypointWhenRouteDoesNotExist() {
+
+        UUID waypointId = UUID.randomUUID();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(false);
+
+        assertThatThrownBy(() -> waypointService.deleteWaypoint(routeId, waypointId))
+            .isInstanceOf(RouteNotFoundException.class)
+            .hasMessage("Route not found with id: " + routeId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verifyNoInteractions(mockWaypointRepository);
+    }
+
+    @Test
+    void shouldRejectDeleteWaypointWhenWaypointDoesNotExistInRoute() {
+
+        UUID waypointId = UUID.randomUUID();
+
+        when(mockRouteRepository.existsById(routeId)).thenReturn(true);
+        when(mockWaypointRepository.findByIdAndRoute_Id(waypointId, routeId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> waypointService.deleteWaypoint(routeId, waypointId))
+            .isInstanceOf(WaypointNotFoundException.class)
+            .hasMessage("Waypoint not found with id: " + waypointId);
+
+        verify(mockRouteRepository).existsById(routeId);
+        verify(mockWaypointRepository).findByIdAndRoute_Id(waypointId, routeId);
+    }
 }
