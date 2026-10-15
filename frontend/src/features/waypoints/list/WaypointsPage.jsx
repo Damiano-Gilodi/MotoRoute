@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import {Link, useParams} from "react-router";
 
 import {ApiRequestError} from "../../../shared/api/ApiRequestError.js";
+import {deleteWaypoint} from "../delete/deleteWaypointApi.js";
 import {WaypointCard} from "./WaypointCard.jsx";
 import {WaypointPagination} from "./WaypointPagination.jsx";
 import {
@@ -17,6 +18,9 @@ export function WaypointsPage() {
   const [waypointPage, setWaypointPage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState("");
+  const [deletingWaypointId, setDeletingWaypointId] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -35,9 +39,7 @@ export function WaypointsPage() {
 
         setWaypointPage(response);
       } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
+        if (error.name === "AbortError") return;
 
         setWaypointPage(null);
 
@@ -58,9 +60,43 @@ export function WaypointsPage() {
     return () => {
       abortController.abort();
     };
-  }, [routeId, page]);
+  }, [routeId, page, reloadKey]);
 
   const waypoints = waypointPage?.content ?? [];
+
+  async function handleDeleteWaypoint(waypoint) {
+    if (deletingWaypointId !== null) return;
+
+    const confirmed = window.confirm(
+      `Vuoi davvero eliminare il waypoint "${waypoint.name}"?`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingWaypointId(waypoint.id);
+    setDeleteError("");
+
+    try {
+      await deleteWaypoint({
+        routeId,
+        waypointId: waypoint.id
+      });
+
+      if (waypoints.length === 1 && page > DEFAULT_WAYPOINT_PAGE) {
+        setPage(currentPage => currentPage - 1);
+      } else {
+        setReloadKey(currentKey => currentKey + 1);
+      }
+    } catch (error) {
+      if (error instanceof ApiRequestError) {
+        setDeleteError(error.message);
+      } else {
+        setDeleteError("Impossibile eliminare il waypoint");
+      }
+    } finally {
+      setDeletingWaypointId(null);
+    }
+  }
 
   return (
     <main>
@@ -88,6 +124,12 @@ export function WaypointsPage() {
         </p>
       )}
 
+      {deleteError && (
+        <p role="alert">
+          {deleteError}
+        </p>
+      )}
+
       {!isLoading && !apiError && waypoints.length === 0 && (
         <p>Nessun waypoint disponibile.</p>
       )}
@@ -100,6 +142,9 @@ export function WaypointsPage() {
                 key={waypoint.id}
                 waypoint={waypoint}
                 routeId={routeId}
+                onDelete={handleDeleteWaypoint}
+                isDeleting={deletingWaypointId === waypoint.id}
+                isDeleteDisabled={deletingWaypointId !== null}
               />
             ))}
           </section>

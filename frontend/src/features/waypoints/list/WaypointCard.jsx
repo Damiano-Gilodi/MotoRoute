@@ -1,17 +1,21 @@
-import {formatRouteDate} from "../../routes/utils/routeFormatters.js";
 import {Link} from "react-router";
 
-export function WaypointCard({waypoint, routeId}) {
+import {formatRouteDate} from "../../routes/utils/routeFormatters.js";
 
+export function WaypointCard({
+                               waypoint,
+                               routeId,
+                               onDelete,
+                               isDeleting = false,
+                               isDeleteDisabled = false
+                             }) {
   const titleId = `waypoint-title-${waypoint.id}`;
 
   return (
     <article aria-labelledby={titleId}>
       <h2 id={titleId}>{waypoint.name}</h2>
 
-      {waypoint.description && (
-        <p>{waypoint.description}</p>
-      )}
+      {waypoint.description && <p>{waypoint.description}</p>}
 
       <dl>
         <div>
@@ -21,7 +25,7 @@ export function WaypointCard({waypoint, routeId}) {
 
         <div>
           <dt>Latitudine</dt>
-          <dd>{waypoint.latitude} </dd>
+          <dd>{waypoint.latitude}</dd>
         </div>
 
         <div>
@@ -42,6 +46,14 @@ export function WaypointCard({waypoint, routeId}) {
       <Link to={`/routes/${routeId}/waypoints/${waypoint.id}/edit`}>
         Modifica waypoint
       </Link>
+
+      <button
+        type="button"
+        onClick={() => onDelete(waypoint)}
+        disabled={isDeleteDisabled}
+      >
+        {isDeleting ? "Eliminazione in corso..." : "Elimina waypoint"}
+      </button>
     </article>
-  )
+  );
 }
