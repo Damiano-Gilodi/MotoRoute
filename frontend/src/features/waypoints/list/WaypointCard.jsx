@@ -1,6 +1,6 @@
 import {Link} from "react-router";
 
-import {formatRouteDate} from "../../routes/utils/routeFormatters.js";
+import {formatDate} from "../../../shared/utils/dateFormatters.js";
 
 export function WaypointCard({
                                waypoint,
@@ -37,7 +37,7 @@ export function WaypointCard({
           <dt>Creato il</dt>
           <dd>
             <time dateTime={waypoint.createdAt}>
-              {formatRouteDate(waypoint.createdAt)}
+              {formatDate(waypoint.createdAt)}
             </time>
           </dd>
         </div>

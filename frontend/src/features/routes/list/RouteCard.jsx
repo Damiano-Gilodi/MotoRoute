@@ -1,9 +1,7 @@
 import {Link} from "react-router";
 
-import {
-  formatRouteDate,
-  formatRouteDifficulty,
-} from "../utils/routeFormatters.js";
+import {formatRouteDifficulty} from "../utils/routeFormatters.js";
+import {formatDate} from "../../../shared/utils/dateFormatters.js";
 
 export function RouteCard({route}) {
   const titleId = `route-title-${route.id}`;
@@ -39,7 +37,7 @@ export function RouteCard({route}) {
           <dt>Creato il</dt>
           <dd>
             <time dateTime={route.createdAt}>
-              {formatRouteDate(route.createdAt)}
+              {formatDate(route.createdAt)}
             </time>
           </dd>
         </div>

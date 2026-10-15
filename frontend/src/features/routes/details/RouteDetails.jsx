@@ -1,7 +1,5 @@
-import {
-  formatRouteDateTime,
-  formatRouteDifficulty,
-} from "../utils/routeFormatters.js";
+import {formatRouteDifficulty} from "../utils/routeFormatters.js";
+import {formatDate} from "../../../shared/utils/dateFormatters.js";
 
 export function RouteDetails({route}) {
   const {
@@ -51,7 +49,7 @@ export function RouteDetails({route}) {
           <dt>Creato il</dt>
           <dd>
             <time dateTime={createdAt}>
-              {formatRouteDateTime(createdAt)}
+              {formatDate(createdAt)}
             </time>
           </dd>
         </div>
@@ -60,7 +58,7 @@ export function RouteDetails({route}) {
           <dt>Aggiornato il</dt>
           <dd>
             <time dateTime={updatedAt}>
-              {formatRouteDateTime(updatedAt)}
+              {formatDate(updatedAt)}
             </time>
           </dd>
         </div>
