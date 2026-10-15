@@ -2,9 +2,8 @@ export function WaypointPagination({
                                      page,
                                      totalPages,
                                      isLoading = false,
-                                     onPageChange,
+                                     onPageChange
                                    }) {
-
   if (totalPages <= 1) {
     return null;
   }
@@ -13,8 +12,12 @@ export function WaypointPagination({
   const isLastPage = page >= totalPages - 1;
 
   return (
-    <nav aria-label="Paginazione waypoints">
+    <nav
+      className="pagination"
+      aria-label="Paginazione waypoints"
+    >
       <button
+        className="action-button"
         type="button"
         disabled={isLoading || isFirstPage}
         onClick={() => onPageChange(page - 1)}
@@ -27,6 +30,7 @@ export function WaypointPagination({
       </span>
 
       <button
+        className="action-button"
         type="button"
         disabled={isLoading || isLastPage}
         onClick={() => onPageChange(page + 1)}

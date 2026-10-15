@@ -9,6 +9,7 @@ import {
   DEFAULT_ROUTE_SORT,
   listRoutes
 } from "./listRoutesApi.js";
+import "../routes.css";
 
 export function RoutesPage() {
   const [page, setPage] = useState(0);
@@ -61,35 +62,42 @@ export function RoutesPage() {
   const routes = routePage?.content ?? [];
 
   return (
-    <main>
-      <header>
+    <main className="page-container">
+      <header className="page-header">
         <h1>Itinerari</h1>
 
-        <Link to="/routes/new">
-          Crea un nuovo itinerario
-        </Link>
+        <div className="page-header__actions">
+          <Link className="action-link" to="/routes/new">
+            Crea un nuovo itinerario
+          </Link>
+        </div>
       </header>
 
       {isLoading && (
-        <p role="status">
+        <p className="status-message" role="status">
           Caricamento itinerari...
         </p>
       )}
 
       {!isLoading && apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}
 
       {!isLoading && !apiError && routes.length === 0 && (
-        <p>Nessun itinerario disponibile.</p>
+        <p className="status-message">
+          Nessun itinerario disponibile.
+        </p>
       )}
 
       {!isLoading && !apiError && routes.length > 0 && (
         <>
-          <section aria-label="Elenco itinerari">
-            {routes.map((route) => (
+          <section
+            className="entity-list"
+            aria-label="Elenco itinerari"
+          >
+            {routes.map(route => (
               <RouteCard
                 key={route.id}
                 route={route}

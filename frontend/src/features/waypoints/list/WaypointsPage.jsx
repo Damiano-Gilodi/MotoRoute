@@ -10,6 +10,7 @@ import {
   DEFAULT_WAYPOINT_PAGE_SIZE,
   listWaypoints
 } from "./listWaypointsApi.js";
+import "../waypoints.css";
 
 export function WaypointsPage() {
   const {routeId} = useParams();
@@ -99,45 +100,58 @@ export function WaypointsPage() {
   }
 
   return (
-    <main>
-      <header>
+    <main className="page-container">
+      <header className="page-header">
         <h1>Waypoint dell'itinerario</h1>
 
-        <Link to={`/routes/${routeId}`}>
-          Torna all'itinerario
-        </Link>
+        <div className="page-header__actions">
+          <Link
+            className="action-link"
+            to={`/routes/${routeId}`}
+          >
+            Torna all'itinerario
+          </Link>
 
-        <Link to={`/routes/${routeId}/waypoints/new`}>
-          Aggiungi waypoint
-        </Link>
+          <Link
+            className="action-link"
+            to={`/routes/${routeId}/waypoints/new`}
+          >
+            Aggiungi waypoint
+          </Link>
+        </div>
       </header>
 
       {isLoading && (
-        <p role="status">
+        <p className="status-message" role="status">
           Caricamento waypoint...
         </p>
       )}
 
       {!isLoading && apiError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {apiError}
         </p>
       )}
 
       {deleteError && (
-        <p role="alert">
+        <p className="error-message" role="alert">
           {deleteError}
         </p>
       )}
 
       {!isLoading && !apiError && waypoints.length === 0 && (
-        <p>Nessun waypoint disponibile.</p>
+        <p className="status-message">
+          Nessun waypoint disponibile.
+        </p>
       )}
 
       {!isLoading && !apiError && waypoints.length > 0 && (
         <>
-          <section aria-label="Elenco waypoint">
-            {waypoints.map((waypoint) => (
+          <section
+            className="entity-list"
+            aria-label="Elenco waypoint"
+          >
+            {waypoints.map(waypoint => (
               <WaypointCard
                 key={waypoint.id}
                 waypoint={waypoint}
